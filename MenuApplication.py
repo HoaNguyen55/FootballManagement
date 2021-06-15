@@ -10,20 +10,21 @@ import funcManageUtils as fmUtils
 import matplotlib.pyplot as plt
 
 # Chuc nang 1: Nhap
+filename = 'venv/WorldCup2022.json'
+filesave = 'venv/data_after_processing'
 
 
-def Nhap():
-    print("<><><> Chào mừng bạn đến với chức năng nhập, ghi file <><><>")
-    filename = 'venv/WorldCup2022.json'
-    filesave = 'venv/data_after_processing'
-    fmUtils.input_option(filename, filesave)
+def NhapVaGhi():
+    print("<><><> Chào mừng bạn đến với chức năng Nhập yêu cầu và ghi file <><><>")
+    fmUtils.inputandwr(filename, filesave)
     return
 
 # Chuc nang 2: Hoi dap
 
 
-def HoiDap():
-    print("<><><> Chuc nang hoi dap, doc file abc.txt de tra loi <><><>")
+def HoiVaDap():
+    print("<><><> Chào mừng bạn đến với chức năng Hỏi và Đáp <><><>")
+    fmUtils.qanda(filename)
     return
 
 # Chuc nang 3: Phan tich
@@ -37,8 +38,8 @@ def PhanTichDuLieu():
 
 def Menu(select_opt):
     switcher = {
-        1: Nhap,
-        2: HoiDap,
+        1: NhapVaGhi,
+        2: HoiVaDap,
         3: PhanTichDuLieu
     }
     func = switcher.get(select_opt, lambda: "Du lieu sai")

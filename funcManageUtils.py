@@ -26,7 +26,7 @@ def sel_opt_save(obj):
     return switch_save_file.get(obj, "Your input is wrong")
 
 
-def input_option(filename, filesave):
+def inputandwr(filename, filesave):
     f = open(filename, "r", encoding="utf-8")
     data = json.loads(f.read())
     opt_save = int(input("Vui lòng lựa chọn chế độ dùng cho file: \n"
@@ -49,6 +49,17 @@ def input_option(filename, filesave):
             file_save.write(str(idx) + "\n")
 
 
-def question_answer(obj):
+def qanda(obj):
+    int(input("Vui lòng lựa chọn chế độ dùng cho file: \n"
+              "\t1. Có bao nhiều đội bóng tham     \n"
+              "\t2. Lưu dữ liệu đè lên file hiện tại \n"
+              "\t3. Quay về Menu                     \n"
+              "\t   Lựa chọn của bạn là: "))
+    return
 
+
+def read_file(fname):
+    outfile = open(fname, 'r', encoding="utf-8")
+    # do something
+    outfile.close()
     return
