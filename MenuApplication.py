@@ -4,20 +4,17 @@
 # Note: Chuong trinh nay co nhieu chuc nang de quan ly bong da
 
 # Chia se mot file chung
-# Chuc nang 1: Nhap
+
 import json
+import funcUtils
+import matplotlib.pyplot as plt
 
-import read_write_file
-from matplotlib import pyplot as plt
+# Chuc nang 1: Nhap
 
 
-def sel_opt_save(obj):
-    switch_save_file = {
-        1: "a",
-        2: "w",
-        3: "back"
-    }
-    return switch_save_file.get(obj, "Nothing")
+def question_answer(obj):
+
+    return
 
 
 def Nhap():
@@ -32,7 +29,7 @@ def Nhap():
                          "\t3. Quay về Menu                     \n"
                          "\t   Lựa chọn của bạn là: "))
 
-    final_opt_save = sel_opt_save(opt_save)
+    final_opt_save = funcUtils.sel_opt_save(opt_save)
     if final_opt_save == "back":
         return
     file_save = open(filesave, final_opt_save, encoding="utf-8")
@@ -44,7 +41,6 @@ def Nhap():
             print("\nkey cua key la: %s " %idx)
             print(idx)
             file_save.write(str(idx) + "\n")
-
     return
 
 # Chuc nang 2: Hoi dap
