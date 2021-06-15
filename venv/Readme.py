@@ -1,3 +1,9 @@
+You can either setup a system variable for Python or open the CMD
+
+C:\ CD ... Go To your directory where you have the python.exe or python interpreter installed
+
+C:\path of the interpreter> python -m spacy download en_core_web_sm
+
 ### Giao diện của chương trình quản lý bóng đá Worldcup 2022
 1. Tổng quan
     Chương trình quản lý bóng đá Worldcup 2022 giúp người dùng có thể lựa chọn những gợi ý câu hỏi và nhận được câu trả lời từ những dữ liệu đã được xử lý trong database.

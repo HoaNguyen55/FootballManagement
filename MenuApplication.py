@@ -6,41 +6,17 @@
 # Chia se mot file chung
 
 import json
-import funcUtils
+import funcManageUtils as fmUtils
 import matplotlib.pyplot as plt
 
 # Chuc nang 1: Nhap
-
-
-def question_answer(obj):
-
-    return
 
 
 def Nhap():
     print("<><><> Chào mừng bạn đến với chức năng nhập, ghi file <><><>")
     filename = 'venv/WorldCup2022.json'
     filesave = 'venv/data_after_processing'
-    f = open(filename, "r", encoding="utf-8")
-    data = json.loads(f.read())
-    opt_save = int(input("Vui lòng lựa chọn chế độ dùng cho file: \n"
-                         "\t1. Thêm dữ liệu vào file có sẵn     \n"
-                         "\t2. Lưu dữ liệu đè lên file hiện tại \n"
-                         "\t3. Quay về Menu                     \n"
-                         "\t   Lựa chọn của bạn là: "))
-
-    final_opt_save = funcUtils.sel_opt_save(opt_save)
-    if final_opt_save == "back":
-        return
-    file_save = open(filesave, final_opt_save, encoding="utf-8")
-    print("Tong so key trong table la:", len(data))
-    for key in data:
-        print("Key cua data la: ", key)
-        file_save.write(key + "\n")
-        for idx in data[key]:
-            print("\nkey cua key la: %s " %idx)
-            print(idx)
-            file_save.write(str(idx) + "\n")
+    fmUtils.input_option(filename, filesave)
     return
 
 # Chuc nang 2: Hoi dap
