@@ -10,20 +10,20 @@ import funcManageUtils as fmUtils
 import matplotlib.pyplot as plt
 
 # Chuc nang 1: Nhap
-filename = 'venv/WorldCup2022.json'
-filesave = 'venv/data_after_processing'
+databasename = 'venv/WorldCup2022.json'
+# filesave = 'venv/data_after_processing'
 
 
 def NhapVaGhi():
-    print("<><><> Chào mừng bạn đến với chức năng Nhập yêu cầu và ghi file <><><>")
-    fmUtils.inputandwr(filename, filesave)
+    print("\n<><><> Chào mừng bạn đến với chức năng Nhập yêu cầu và ghi file <><><>")
+    fmUtils.inputandwr(databasename)
     return
 
 # Chuc nang 2: Hoi dap
 
 
 def HoiVaDap():
-    print("<><><> Chào mừng bạn đến với chức năng Hỏi và Đáp <><><>")
+    print("\n<><><> Chào mừng bạn đến với chức năng Hỏi và Đáp <><><>")
     fmUtils.qanda(filename)
     return
 
@@ -48,14 +48,17 @@ def Menu(select_opt):
 
 
 while True:
-    print("")
-    selOpt = int(input("Vui lòng chọn các yêu cầu sau: \n"
+    print("\n \t\t\t <><><> Welcome to Football Management Application <><><>")
+    selOpt = int(input("\nVui lòng chọn các yêu cầu sau: \n"
                        "\t1. Nhập dữ liệu  \n"
                        "\t2. Hỏi và đáp    \n"
                        "\t3. Phân tích dữ liệu theo yêu cầu: \n"
                        "\t4. Thoát chương trình \n"
                        "\t   Lựa chọn của bạn là: "))
-    if selOpt <= 0 or selOpt > 3:
+    if selOpt == 4:
         print("Chào tạm biệt")
         break
-    Menu(selOpt)
+    elif selOpt != 4 and (selOpt > 4 or selOpt < 1):
+        print("\nNOTE: Vui lòng nhập lại yêu cầu hoặc nhấn 4 để thoát chương trình !!!")
+    else:
+        Menu(selOpt)
