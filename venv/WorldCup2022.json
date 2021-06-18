@@ -1798,38 +1798,103 @@
         }
 
     ],
-    "groups": {
-        "a": {
-            "name": "Group A",
-            "country": ["Guam", "Maldives", "Philippines", "Syria", "China"]
+    "groups": [
+        {
+            "a":
+            {
+                "name": "Group A",
+                "country": [
+                    "Guam",
+                    "Maldives",
+                    "Philippines",
+                    "Syria",
+                    "China"
+                ]
+            }
         },
-        "b": {
-            "name": "Group B",
-            "country": ["Nepal", "Kawait", "Taiwan", "Jordan", "Australia"]
+        {
+            "b": {
+                "name": "Group B",
+                "country": [
+                    "Nepal",
+                    "Kawait",
+                    "Taiwan",
+                    "Jordan",
+                    "Australia"
+                ]
+            }
         },
-        "c": {
-            "name": "Group C",
-            "country": ["Campuchia", "Hong Kong", "Bahrain", "Iraq", "Iran"]
+        {
+            "c": {
+                "name": "Group C",
+                "country": [
+                    "Cambodia",
+                    "Hong Kong",
+                    "Bahrain",
+                    "Iraq",
+                    "Iran"
+                ]
+            }
         },
-        "d": {
-            "name": "Group D",
-            "country": ["Singapore", "Yemen", "Palestine", "Uzbekistan", "Saudi Arabia"]
+        {
+            "d": {
+                "name": "Group D",
+                "country": [
+                    "Singapore",
+                    "Yemen",
+                    "Palestine",
+                    "Uzbekistan",
+                    "Saudi Arabia"
+                ]
+            }
         },
-        "e": {
-            "name": "Group E",
-            "country": ["Bangladesh", "Afghanistan", "India", "Oman", "Qatar"]
+        {
+            "e": {
+                "name": "Group E",
+                "country": [
+                    "Bangladesh",
+                    "Afghanistan",
+                    "India",
+                    "Oman",
+                    "Qatar"
+                ]
+            }
         },
-        "f": {
-            "name": "Group F",
-            "country": ["Mongolia", "Myanmar", "Tajikistan", "Krygyzstan", "Japan"]
+        {
+            "f": {
+                "name": "Group F",
+                "country": [
+                    "Mongolia",
+                    "Myanmar",
+                    "Tajikistan",
+                    "Krygyzstan",
+                    "Japan"
+                ]
+            }
         },
-        "g": {
-            "name": "Group G",
-            "country": ["Indonesia", "Malaysia", "Thailand", "Vietnam", "UAE"]
+        {
+            "g": {
+                "name": "Group G",
+                "country": [
+                    "Indonesia",
+                    "Malaysia",
+                    "Thailand",
+                    "Vietnam",
+                    "UAE"
+                ]
+            }
         },
-        "h": {
-            "name": "Group H",
-            "country": ["Sri Lanka", "Turkmenistan", "North Korea", "Liban", "Korea"]
+        {
+            "h": {
+                "name": "Group H",
+                "country": [
+                    "Sri Lanka",
+                    "Turkmenistan",
+                    "North Korea",
+                    "Liban",
+                    "Korea"
+                ]
+            }
         }
-    }
+    ]
 }
