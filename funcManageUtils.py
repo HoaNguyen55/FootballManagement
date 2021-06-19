@@ -45,7 +45,7 @@ def sel_opt_save(mode):
 
 
 def remove_last_line(file_path):
-    rd_file = open(file_path, "r")
+    rd_file = open(file_path, "r", encoding='utf-8')
     lines = rd_file.readlines()
     rd_file.close()
     wr_file = open(file_path, "w", encoding="utf-8")
@@ -62,7 +62,6 @@ def common_input_exit(file_save, file_path):
             print("\n\tNhập ở đây, nhấn q để thoát")
 
         usr_in = input("\tInput: ")
-        file_save.writelines(usr_in)
 
         if usr_in == "q":
             usr_save = input("\n\tBạn có chắc chắn muốn lưu file vừa tạo, nhấn Y?\n"
@@ -73,12 +72,14 @@ def common_input_exit(file_save, file_path):
             if usr_save in ["N", "Y"]:
                 file_path = my_path / file_path
                 file_save.close()
-                remove_last_line(file_path)
+                # remove_last_line(file_path)
                 if os.path.exists(file_path) and usr_save == "N":
                     os.remove(file_path)
                     file_path = None
                 break
             continue
+        else:
+            file_save.writelines(usr_in)
 
         file_save.writelines("\n")
         i += 1
@@ -135,20 +136,18 @@ def common_qanda_exit(file_save, file_path, value=None, data=None):
                          "\tNhấn phím bất kỳ để tiếp tục\n"
                          "\tLựa chọn của bạn là: "
                          )
-        if usr_save in ["N", "Y"]:
-            file_path = my_path / file_path
-            file_save.close()
-            remove_last_line(file_path)
-            if os.path.exists(file_path) and usr_save == "N":
+        if usr_save in ["N", "Y"]:  # Nếu chọn Yes hoặc No, đều quay ngược lại Menu trước đó
+            file_path = my_path / file_path  #  Tạo đường dẫn file
+            file_save.close()  # Đóng file
+            # remove_last_line(file_path)
+            if os.path.exists(file_path) and usr_save == "N":  # Nếu chọn No thì không lưu file
+                                                               # và remove đường dẫn file đã khởi tạo
                 os.remove(file_path)
                 file_path = None
+            return file_path
 
-        if file_path is None:  # Trường hợp không muốn tạo file hoặc exit ngay từ đầu thì in ra không có file
-            print("Không create file")
-        else:
-            print(f'Đường dẫn của file: {file_path}')  # In ra đường dẫn của file
-
-    file_save.writelines("\n")
+    else:
+        file_save.writelines("\n")
 
     return file_path
 
@@ -156,7 +155,7 @@ def common_qanda_exit(file_save, file_path, value=None, data=None):
 def common_sel_opt_save():
     final_opt_save  = None
     file_path       = None
-    my_path         = Path().absolute()
+    my_path         = Path().absolute()  # Lấy đường dẫn file hiện tại
 
     opt_save = int(input("\n\t**** Vui lòng lựa chọn chế độ dùng cho file:"
                          "\n\t1. Tạo file log mới"
@@ -209,7 +208,8 @@ def input_qanda(dbname):
     final_opt_save, opt_save, file_path = common_sel_opt_save()  # Hàm chọn chức năng save data
     if opt_save == 4:
         return
-    file_save = None
+
+    file_save = open(file_path, final_opt_save, encoding="utf-8")  # Mở file với lựa chọn user mong muốn
 
     while True:
         if final_opt_save is None or final_opt_save is True:
@@ -225,14 +225,14 @@ def input_qanda(dbname):
         if usr_input == 4:
             break
 
-        file_save = open(file_path, final_opt_save, encoding="utf-8")  # Mở file với lựa chọn user mong muốn
-
         file_path = common_qanda_exit(file_save, file_path, usr_input, data)  # Trả lời câu hỏi và kết thúc
-        if file_path is None:
-            break
+        if file_path is None:  # Trường hợp không muốn tạo file hoặc exit ngay từ đầu thì in ra không có file
+            print("Không create file")
 
     if file_save is not None:
         file_save.close()
+
+    print(f'Đường dẫn của file: {file_path}')  # In ra đường dẫn của file
     fdb.close()
 
 
