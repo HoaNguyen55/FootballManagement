@@ -5,35 +5,35 @@
             "name": "Al Maktoum",
             "country": "United Arab Emirates",
             "city": "Dubai",
-            "capacity": "15000"
+            "capacity": 15000
         },
         {
             "id": 2,
             "name": "Zabeel Stadium",
             "country": "United Arab Emirates",
             "city": "Dubai",
-            "capacity": "8439"
+            "capacity": 8439
         },
         {
             "id": 3,
             "name": "Thammasat",
             "country": "Thailand",
             "city": "Pathum Thani",
-            "capacity": "25000"
+            "capacity": 25000
         },
         {
             "id": 4,
             "name": "Mỹ Đình National",
             "country": "Vietnam",
             "city": "Hanoi",
-            "capacity": "25000"
+            "capacity": 40192
         },
         {
             "id": 5,
             "name": "Kapten I Wayan Dipta",
             "country": "Indonesia",
             "city": "Bali",
-            "capacity": "23081"
+            "capacity": 23081
         }
     ],
     "tvchannels": [
@@ -41,19 +41,73 @@
             "id": 1,
             "name": "VTV6",
             "country": "Vietnam",
-            "city": "HaNoi"
+            "owner": "HANOITV"
         },
         {
             "id": 2,
             "name": "VTV5",
             "country": "Vietnam",
-            "city": "HaNoi"
+            "owner": "HANOITV"
         },
         {
             "id": 3,
             "name": "Youtube Next Sports",
             "country": "Vietnam",
-            "city": "Youtube"
+            "owner": "Youtube"
+        },
+        {
+            "id": 4,
+            "name": "Astro Area",
+            "country": "Malaysia",
+            "owner": "Astro"
+        },
+        {
+            "id": 5,
+            "name": "RTM",
+            "country": "Malaysia",
+            "owner": "Radio Televisyen Malaysia"
+        },
+        {
+            "id": 6,
+            "name": "RRI",
+            "country": "Indonesia",
+            "owner": "Radio of the Republic of Indonesia"
+        },
+        {
+            "id": 7,
+            "name": "TrueVisions",
+            "country": "Thailand",
+            "owner": "United Broadcasting Corporation"
+        },
+        {
+            "id": 8,
+            "name": "Channel5",
+            "country": "Thailand",
+            "owner": "Royal Thai Army Radio and Television Station"
+        },
+        {
+            "id": 9,
+            "name": "ABS-CBN",
+            "country": "Philippines",
+            "owner": "ABS-CBN"
+        },
+        {
+            "id": 9,
+            "name": "ABS-CBN",
+            "country": "Philippines",
+            "owner": "ABS-CBN"
+        },
+        {
+            "id": 10,
+            "name": "Mediacorp",
+            "country": "Singapore",
+            "owner": "Temasek Holdings"
+        },
+        {
+            "id": 11,
+            "name": "Singtel",
+            "country": "Singapore",
+            "owner": "Temasek Holdings"
         }
     ],
     "teams": [
