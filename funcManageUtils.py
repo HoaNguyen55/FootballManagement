@@ -3,10 +3,10 @@ import datetime as dt
 from pathlib import Path
 import os
 
-time_zone = dt.datetime.now()
+time_zone = dt.datetime.now()  # Get thời gian thực
 
 
-def fname():  # Tạo tên file là file_recored_<current_Time>
+def fname():  # Hàm tạo tên file là file_recored_<current_Time>
     current_time = (time_zone.strftime("%X")).replace(":", ".")
     time_file = time_zone.strftime("_%d-" + "%m-" + "%y_" + current_time)
     f_name = "file_recorded" + time_file
@@ -16,10 +16,10 @@ def fname():  # Tạo tên file là file_recored_<current_Time>
     return path_file
 
 
-def write_file(write=True):  # Trường hợp chạy user muốn tạo file mới, update time trước khi tạo file mới
-    if write:
+def write_file(write=True):
+    if write:  # Trường hợp user muốn tạo file mới, update time trước khi tạo file mới
         time_zone = dt.datetime.now()
-        return "w+"
+        return "w+"  # Dùng lệnh w+ để có thể read nếu cần
     return "w"
 
 
@@ -32,12 +32,7 @@ def read_file():
 
 
 def return_back():
-    return True
-
-
-def open_file(file_path, opt_save):
-    file_save = open(file_path, opt_save, encoding="utf-8")
-    return file_save
+    return False
 
 
 def sel_opt_save(mode):
@@ -45,13 +40,12 @@ def sel_opt_save(mode):
         1: write_file(write=True),
         2: append_file(),
         3: write_file(write=False),
-        4: return_back()
     }
     return switch_save_file.get(mode, "Your input is wrong")
 
 
 def remove_last_line(file_path):
-    rd_file = open_file(file_path, "r")
+    rd_file = open(file_path, "r")
     lines = rd_file.readlines()
     rd_file.close()
     wr_file = open(file_path, "w", encoding="utf-8")
@@ -59,15 +53,19 @@ def remove_last_line(file_path):
     wr_file.close()
 
 
-def common_input(file_save, file_path, my_path):
+def common_input_exit(file_save, file_path):
+    my_path = Path().absolute()
     i = 0
+
     while True:
         if i == 0:
             print("\n\tNhập ở đây, nhấn q để thoát")
+
         usr_in = input("\tInput: ")
         file_save.writelines(usr_in)
+
         if usr_in == "q":
-            usr_save = input("\n\tBạn muốn lưu file vừa tạo, nhấn Y?\n"
+            usr_save = input("\n\tBạn có chắc chắn muốn lưu file vừa tạo, nhấn Y?\n"
                              "\tNhấn phím Y hoặc N để thoát\n"
                              "\tNhấn phím bất kỳ để tiếp tục\n"
                              "\tLựa chọn của bạn là: "
@@ -85,75 +83,157 @@ def common_input(file_save, file_path, my_path):
         file_save.writelines("\n")
         i += 1
 
+    return file_path
 
-def inputandwr(databasename):
-    fdatabase = open(databasename, "r", encoding="utf-8")
-    data = json.loads(fdatabase.read())
+
+def answer_question(file_save, value=None, data=None):
+    if value is None or data is None:
+        return
+    result  = 0
+    if value == 1:  # 1. Có bao nhiều đội bóng tham dự World Cup 2022?
+        file_save.write('\n1. Có bao nhiều đội bóng tham dự World Cup 2022?')
+        for key in data['teams']:
+            result += 1
+    elif value == 2:  # 2. Có bao nhiêu chương trình tv trực tiếp ở Việt Nam và Singapore
+        file_save.write('\n2. Có bao nhiêu chương trình tv trực tiếp ở Việt Nam và Singapore')
+        for key in data['tvchannels']:
+            if key['country'] == 'VietNam' or key['country'] == 'Singapore':
+                result += 1
+    elif value == 3:  # 3. Liệt kê sân vận động nào có sức chứa trên 20000 người?
+        file_save.write('\n3. Liệt kê sân vận động nào có sức chứa trên 20000 người?')
+        result = []
+        for key in data['stadiums']:
+            if key['capacity'] > 20000:
+                result.append(key['name'])
+    else:
+        result = None
+
+    return result
+
+
+def common_qanda_exit(file_save, file_path, value=None, data=None):
     my_path = Path().absolute()
-    file_name = None
+    if value is None or data is None:
+        return
 
+    result = answer_question(file_save, value, data)
+    if result is not None:
+        print('Đã trả lời xong')
+        if isinstance(result, list):
+            usr_in = "\nKết quả của câu hỏi là: " + str(result)[1:-1]
+        else:
+            usr_in = "\nKết quả của câu hỏi là: " + str(result)
+        file_save.writelines(usr_in)
+    else:
+        return
+
+    usr_in = input("\n\tNhấn q để thoát, anykey để tiếp tục: ")
+    usr_save = ""
+    if usr_in == "q":
+        usr_save = input("\n\tBạn có chắc chắn muốn lưu file vừa tạo, nhấn Y?\n"
+                         "\tNhấn phím Y hoặc N để thoát\n"
+                         "\tNhấn phím bất kỳ để tiếp tục\n"
+                         "\tLựa chọn của bạn là: "
+                         )
+        if usr_save in ["N", "Y"]:
+            file_path = my_path / file_path
+            file_save.close()
+            remove_last_line(file_path)
+            if os.path.exists(file_path) and usr_save == "N":
+                os.remove(file_path)
+                file_path = None
+
+        if file_path is None:  # Trường hợp không muốn tạo file hoặc exit ngay từ đầu thì in ra không có file
+            print("Không create file")
+        else:
+            print(f'Đường dẫn của file: {file_path}')  # In ra đường dẫn của file
+
+    file_save.writelines("\n")
+
+    return file_path
+
+
+def common_sel_opt_save():
+    final_opt_save  = None
+    file_path       = None
+    my_path         = Path().absolute()
+
+    opt_save = int(input("\n\t**** Vui lòng lựa chọn chế độ dùng cho file:"
+                         "\n\t1. Tạo file log mới"
+                         "\n\t2. Thêm dữ liệu vào file log có sẵn"
+                         "\n\t3. Ghi đè dữ liệu lên file log có sẵn"
+                         "\n\t4. Quay về Menu"
+                         "\n\t   Lựa chọn của bạn là: "
+                         ))
+
+    if opt_save not in range(1, 5):
+        print("\tNote: Vui lòng nhập lại hoặc nhấn 4 để quay về Menu")
+    else:
+        if opt_save == 4:
+            return final_opt_save, opt_save, file_path
+        final_opt_save = sel_opt_save(opt_save)
+
+    if final_opt_save in ["w", "w+"] and opt_save != 3:  # Điều kiện khi lưu file khi tạo file mới
+        file_path = fname()
+    elif final_opt_save == "a" or opt_save == 3:  # Điều kiện lưu file khi thêm hoặc ghi đè dữ liệu
+        file_name = input("Vui lòng nhập tên file cần thêm hoặc ghi đè dữ liệu: ")
+        if file_name is None or file_name == "" or len(file_name) <= 0:
+            return final_opt_save, opt_save, file_path
+        file_path = my_path / file_name  # Đường dẫn file, full path
+    else:
+        return final_opt_save, opt_save, file_path
+
+    return final_opt_save, opt_save, file_path
+
+
+def input_data(dbname):
     while True:
-        opt_save = int(input("\n**** Vui lòng lựa chọn chế độ dùng cho file: \n"
-                             "\t1. Tạo file log mới                          \n"
-                             "\t2. Thêm dữ liệu vào file log có sẵn          \n"
-                             "\t3. Ghi đè dữ liệu lên file log có sẵn        \n"
-                             "\t4. Quay về Menu                              \n"
-                             "\t   Lựa chọn của bạn là: "
-                             ))
-
-        if opt_save not in range(1, 5):
-            print("\tNote: Vui lòng nhập lại hoặc nhấn 4 để quay về Menu")
-        else:
-            final_opt_save = sel_opt_save(opt_save)
-
-        if final_opt_save in ["w", "w+"] and opt_save != 3:
-            file_path = fname()
-            file_save = open_file(file_path, final_opt_save)
-            common_input(file_save, file_path, my_path)
-
-        elif final_opt_save == "a" or opt_save == 3:
-            file_name = input("Vui lòng nhập tên file cần thêm hoặc ghi đè dữ liệu: ")
-            if file_name is None or file_name == "" or len(file_name) <= 0:
-                return
-            file_path = my_path / file_name
-            file_save = open_file(file_path, final_opt_save)
-            common_input(file_save, file_path, my_path)
-
-        else:
+        final_opt_save, opt_save, file_path = common_sel_opt_save()  # Hàm chọn chức năng save data
+        if final_opt_save is None or final_opt_save is True or file_path is None:
             return
 
-        if file_path == None:
+        file_save = open(file_path, final_opt_save, encoding="utf-8")  # Mở file
+
+        file_path = common_input_exit(file_save, file_path)  # Điều kiện nhập và thoát khi đã nhập xong
+
+        if file_path is None:  # Trường hợp không muốn tạo file thì in ra không có file
             print("Không create file vì bạn đã chọn xóa file đã tạo")
         else:
             file_save.close()
-        print(f'Đường dẫn của file: {file_path}')
-        fdatabase.close()
+        print(f'Đường dẫn của file: {file_path}')  # In ra đường dẫn của file
 
 
-def sel_opt_qanda(obj):
-    if obj not in range(1, 5):
-        print("Your input is wrong, please select again")
-        return return_back()
+def input_qanda(dbname):
+    fdb = open(dbname, "r", encoding="utf-8")
+    data = json.loads(fdb.read())
+    final_opt_save, opt_save, file_path = common_sel_opt_save()  # Hàm chọn chức năng save data
+    if opt_save == 4:
+        return
+    file_save = None
 
-    switch_save_file = {
-        1: append_file(),
-        2: overwrite_file(),
-        3: return_back()
-    }
-    return switch_save_file.get(obj, "Your input is wrong")
+    while True:
+        if final_opt_save is None or final_opt_save is True:
+            break
+        usr_input = int(input("\n\t**** Vui lòng lựa chọn câu hỏi:"
+                              "\n\t1. Có bao nhiều đội bóng tham dự World Cup 2022?"
+                              "\n\t2. Có bao nhiêu chương trình TV trực tiếp đội tuyển Việt Nam và Malaysia thi đấu?"
+                              "\n\t3. Có bao nhiêu sân vận động có sức chứa trên 20000 người?"
+                              "\n\t4. Quay về Menu"
+                              "\n\t   Lựa chọn của bạn là: "
+                              ))
 
+        if usr_input == 4:
+            break
 
-def qanda(obj):
-    int(input("\nVui lòng lựa chọn chế độ dùng cho file: \n"
-              "\t1.Có bao nhiều đội bóng tham dự World Cup 2022? \n"
-              "\t2.Có bao nhiêu chương trình TV trực tiếp khi đội tuyển Việt Nam và Malaysia thi đấu? \n"
-              "\t3.Có bao nhiêu sân vận động có sức chứa trên 20000 người? \n"
-              "\t4.Sân vận động nào được dùng tổ chức trận việt nam và indo, và có sức chứa bao nhiêu? \n"
-              "\t5.Có bao nhiêu đội bóng ở bảng G có cầu thủ tuổi lớn hơn 23 và là tiền vệ? \n"
-              ))
-    # case1
-    switch()
-    return
+        file_save = open(file_path, final_opt_save, encoding="utf-8")  # Mở file với lựa chọn user mong muốn
+
+        file_path = common_qanda_exit(file_save, file_path, usr_input, data)  # Trả lời câu hỏi và kết thúc
+        if file_path is None:
+            break
+
+    if file_save is not None:
+        file_save.close()
+    fdb.close()
 
 
 def read_file(fname):

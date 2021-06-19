@@ -10,13 +10,13 @@ import funcManageUtils as fmUtils
 import matplotlib.pyplot as plt
 
 # Chuc nang 1: Nhap
-databasename = 'venv/WorldCup2022.json'
+database_name = 'venv/WorldCup2022.json'
 # filesave = 'venv/data_after_processing'
 
 
 def NhapVaGhi():
     print("\n<><><> Chào mừng bạn đến với chức năng Nhập yêu cầu và ghi file <><><>")
-    fmUtils.inputandwr(databasename)
+    fmUtils.input_data(database_name)
     return
 
 # Chuc nang 2: Hoi dap
@@ -24,7 +24,7 @@ def NhapVaGhi():
 
 def HoiVaDap():
     print("\n<><><> Chào mừng bạn đến với chức năng Hỏi và Đáp <><><>")
-    fmUtils.qanda(filename)
+    fmUtils.input_qanda(database_name)
     return
 
 # Chuc nang 3: Phan tich
