@@ -45,7 +45,6 @@ class DataEntryForm(QWidget):
         # Các chức năng
         self.buttonAdd = QPushButton('Thêm')
         self.buttonClear = QPushButton('Xóa')
-        self.buttonEdit = QPushButton('Chỉnh sửa')
         self.buttonQuit = QPushButton('Thoát')
         self.buttonPlot = QPushButton('Vẽ biểu đồ')
 
@@ -94,6 +93,9 @@ class DataEntryForm(QWidget):
 
         self.layoutLeft.addWidget(self.table, 40)
         self.layoutLeft.addLayout(self.layoutRight, 20)
+
+        self.table.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
+
         self.setLayout(self.layoutLeft)
 
         self.buttonQuit.clicked.connect(self.quit_message)
@@ -281,20 +283,20 @@ class MainWindow(QMainWindow):
         # Action thêm xóa sửa
         self.actionThem = QtWidgets.QAction(self)
         self.actionThem.setObjectName("actionThem")
+        self.actionThem.setEnabled(False)
+
         self.actionXoa = QtWidgets.QAction(self)
         self.actionXoa.setObjectName("actionXoa")
+
         self.actionSua = QtWidgets.QAction(self)
         self.actionSua.setObjectName("actionSua")
-        # Action copy/paste/save
-        self.actionCopy = QtWidgets.QAction(self)
-        self.actionCopy.setObjectName("actionCopy")
-        self.actionPaste = QtWidgets.QAction(self)
-        self.actionPaste.setObjectName("actionPaste")
-        self.actionSave = QtWidgets.QAction(self)
-        self.actionSave.setObjectName("actionSave")
+        self.actionSua.setEnabled(False)
+
+        self.actionExport = QtWidgets.QAction(self)
+        self.actionExport.setObjectName("actionExport")
+        self.actionExport.setEnabled(False)
         # Action thoát
         self.actionThoat = QtWidgets.QAction(self)
-        self.actionThoat.setEnabled(True)
         self.actionThoat.setObjectName("actionThoat")
         # Action câu hỏi
         self.actionCauHoi = QtWidgets.QAction(self)
@@ -308,18 +310,13 @@ class MainWindow(QMainWindow):
         # Action liên hệ
         self.actionLienHe = QtWidgets.QAction(self)
         self.actionLienHe.setObjectName("actionLienHe")
-        # Action thông tin phần mềm
-        self.actionThongTinPhanMem = QtWidgets.QAction(self)
-        self.actionThongTinPhanMem.setObjectName("actionThongTinPhanMem")
 
         # Trong menu, add các action bên trên
         # menu file
         self.menuFile.addAction(self.actionThem)
         self.menuFile.addAction(self.actionSua)
         self.menuFile.addAction(self.actionXoa)
-        self.menuFile.addAction(self.actionCopy)
-        self.menuFile.addAction(self.actionPaste)
-        self.menuFile.addAction(self.actionSave)
+        self.menuFile.addAction(self.actionExport)
         self.menuFile.addSeparator()
         self.menuFile.addAction(self.actionThoat)
         # menu hỏi đáp
@@ -328,7 +325,6 @@ class MainWindow(QMainWindow):
         self.menuBieuDo.addAction(self.actionVeBieuDo)
         # Menu trợ giúp
         self.menuTroGiup.addAction(self.actionLienHe)
-        self.menuTroGiup.addAction(self.actionThongTinPhanMem)
 
         # Add action cho tiêu đề menu gồm File, hỏi đáp, biểu đồ và trợ giúp
         self.menubar.addAction(self.menuFile.menuAction())
@@ -340,14 +336,35 @@ class MainWindow(QMainWindow):
         QtCore.QMetaObject.connectSlotsByName(self)
 
         # tạo connection tới những chỗ ta click vào
-        self.actionThem.triggered.connect(lambda: self.clicked("Thêm was clicked"))
-        self.actionXoa.triggered.connect(lambda: self.clicked("Xóa was clicked"))
+        self.actionThem.triggered.connect(self.add_entry)
+        self.actionXoa.triggered.connect(self.reset_table)
         self.actionSua.triggered.connect(lambda: self.clicked("Sửa was clicked"))
-        self.actionSave.triggered.connect(lambda: self.clicked("Save was clicked"))
-        self.actionCopy.triggered.connect(lambda: self.clicked("Copy was clicked"))
-        self.actionPaste.triggered.connect(lambda: self.clicked("Paste was clicked"))
+        self.actionCauHoi.triggered.connect(self.question_answer)
+        self.actionLienHe.triggered.connect(self.contact)
+        self.actionVeBieuDo.triggered.connect(self.draw_chart)
 
         self.setCentralWidget(w)
+
+    def question_answer(self):
+        pass
+
+    def contact(self):
+        info = QMessageBox(self)
+        # info.setIconPixmap(QPixmap("C:/Users/ThuongLe.LETHUONG/PycharmProjects/FootballManagement/GUI/New_Ronaldo.png"))
+        info.setWindowTitle("Contact Information")
+        info.setText("Football Manager là phần mềm quản lý cầu thủ\n"
+                     "Phần mềm đang trong giai đoạn thử nghiệm\n\n"
+                     "---------------------------------------------")
+        info.setInformativeText("Mọi chi tiết xin vui lòng liên hệ:"
+                                 "\nThành viên dự án Football Manager:"
+                                 "\n\tNguyễn Lê Minh Hòa"                        
+                                 "\n\tSđt liên hệ: 0944 886 896")
+        info.autoFillBackground()
+        info.setIcon(QMessageBox.Information)
+        info.setStandardButtons(QMessageBox.Close)
+        info.setDefaultButton(QMessageBox.Close)
+
+        x = info.exec_()
 
     def retranslateUi(self):
         _translate = QtCore.QCoreApplication.translate
@@ -368,22 +385,20 @@ class MainWindow(QMainWindow):
         self.actionThoat.triggered.connect(self.quit_message)
 
         self.actionLienHe.setText(_translate("self", "Liên hệ"))
-        self.actionThongTinPhanMem.setText(_translate("self", "Thông tin phần mềm"))
 
         # Tạo shorcut action Thêm/Xóa/Sửa
         self.actionThem.setText(_translate("MainWindow", "Thêm"))
         self.actionThem.setShortcut(_translate("MainWindow", "Ctrl+A"))
+        self.actionThem.triggered.connect(DataEntryForm.add_entry)
+
         self.actionXoa.setText(_translate("MainWindow", "Xóa"))
         self.actionXoa.setShortcut(_translate("MainWindow", "Ctrl+D"))
+
         self.actionSua.setText(_translate("MainWindow", "Sửa"))
         self.actionSua.setShortcut(_translate("MainWindow", "Ctrl+E"))
-        # Tạo shorcut action Copy/Paste/Save
-        self.actionCopy.setText(_translate("MainWindow", "Sao Chép"))
-        self.actionCopy.setShortcut(_translate("MainWindow", "Ctrl+C"))
-        self.actionPaste.setText(_translate("MainWindow", "Dán"))
-        self.actionPaste.setShortcut(_translate("MainWindow", "Ctrl+V"))
-        self.actionSave.setText(_translate("MainWindow", "Lưu"))
-        self.actionSave.setShortcut(_translate("MainWindow", "Ctrl+S"))
+
+        self.actionExport.setText(_translate("MainWindow", "Xuất file"))
+        self.actionExport.setShortcut(_translate("MainWindow", "Ctrl+S"))
 
     def export_to_csv(self):
         import pandas as pd
@@ -412,6 +427,75 @@ class MainWindow(QMainWindow):
                                         QMessageBox.Yes | QMessageBox.No)
         if qmessage == QMessageBox.Yes:
             sys.exit()
+
+    def add_entry(self):
+        name = self.lineEditName.text()
+        birth = self.lineEditBirth.text()
+        position = self.lineEditPosition.text()
+        club = self.lineEditClub.text()
+        number = self.lineEditNumber.text()
+
+        try:
+            # Add vào database table
+            name = QTableWidgetItem(name)
+            name.setTextAlignment(Qt.AlignCenter)
+            birth = QTableWidgetItem('{}'.format(str(birth)))
+            birth.setTextAlignment(Qt.AlignCenter)
+            position = QTableWidgetItem(position)
+            position.setTextAlignment(Qt.AlignCenter)
+            club = QTableWidgetItem(club)
+            club.setTextAlignment(Qt.AlignCenter)
+            number = QTableWidgetItem(number)
+            number.setTextAlignment(Qt.AlignCenter)
+
+            # Thêm vào database table
+            self.table.insertRow(self.items)
+            self.table.setItem(self.items, 0, name)
+            self.table.setItem(self.items, 1, birth)
+            self.table.setItem(self.items, 2, position)
+            self.table.setItem(self.items, 3, club)
+            self.table.setItem(self.items, 4, number)
+            self.items += 1
+
+            self.lineEditName.setText('')
+            self.lineEditPosition.setText('')
+            self.lineEditClub.setText('')
+            self.lineEditNumber.setText('')
+
+        except ValueError:
+            print("Something goes wrong")
+
+    def reset_table(self):
+        self.table.setRowCount(0)
+        self.items = 0
+
+        chart = QChart()
+        self.chartView.setChart(chart)
+
+    def quit_message(self, event):
+        reply = QMessageBox.question(
+            self, "Message",
+            "Are you sure you want to quit? Any unsaved work will be lost.",
+            QMessageBox.Save | QMessageBox.Close | QMessageBox.Cancel,
+            QMessageBox.Save)
+
+        if reply == QMessageBox.Close:
+            app.quit()
+        else:
+            pass
+
+    def draw_chart(self):
+        series = QPieSeries()
+
+        for i in range(self.table.rowCount()):
+            text = self.table.item(i, 0).text()
+            val = float(self.table.item(i, 1).text().replace('$', ''))
+            series.append(text, val)
+
+        chart = QChart()
+        chart.addSeries(series)
+        chart.legend().setAlignment(Qt.AlignTop)
+        self.chartView.setChart(chart)
 
 if __name__ == "__main__":
     import sys
