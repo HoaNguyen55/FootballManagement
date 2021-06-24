@@ -10,7 +10,7 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import QDate, QTime, QDateTime, Qt
 from PyQt5.QtChart import QChart, QChartView, QPieSeries
 import matplotlib.pyplot as plt
 
@@ -18,35 +18,54 @@ import matplotlib.pyplot as plt
 class DataEntryForm(QWidget):
     def __init__(self):
         super().__init__()
-        self.items = 0
-
-        self._data = {}
-
+        self.items    = 0
+        self.flag     = 0
+        self._data    = {}
+        self.lstClear = ['Xóa tất cả', 'Lựa chọn dòng']
         # left side
         self.table = QTableWidget()
         self.table.setColumnCount(5)
         self.table.setHorizontalHeaderLabels(('Họ và Tên', 'Ngày Sinh', 'Vị Trí', 'Câu Lạc Bộ', 'Số Áo'))
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
 
-        self.layoutRight = QVBoxLayout()
-        self.layoutLeft = QHBoxLayout()
+        self.layoutRight    = QVBoxLayout()
+        self.layoutLeft     = QHBoxLayout()
 
         # chart widget
-        self.chartView = QChartView()
+        self.chartView      = QChartView()
         self.chartView.setRenderHint(QPainter.Antialiasing)
 
         # Thông tin cầu thủ
-        self.lineEditName = QLineEdit()
-        self.lineEditBirth = QDateEdit()
-        self.lineEditPosition = QLineEdit()
-        self.lineEditClub = QLineEdit()
-        self.lineEditNumber = QLineEdit()
+        self.lineEditName       = QLineEdit()
+        self.lineEditBirth      = QDateEdit()
+        self.lineEditPosition   = QLineEdit()
+        self.lineEditClub       = QLineEdit()
+        self.lineEditNumber     = QLineEdit()
 
         # Các chức năng
-        self.buttonAdd = QPushButton('Thêm')
-        self.buttonClear = QPushButton('Xóa')
-        self.buttonQuit = QPushButton('Thoát')
-        self.buttonPlot = QPushButton('Vẽ biểu đồ')
+        self.buttonAdd      = QPushButton('Thêm')
+        self.buttonAdd.setFixedHeight(25)
+        self.buttonQuit     = QPushButton('Thoát')
+        self.buttonQuit.setFixedHeight(25)
+        self.buttonPlot     = QPushButton('Vẽ biểu đồ')
+        self.buttonPlot.setFixedHeight(25)
+        self.buttonEdit     = QPushButton('Bật/Tắt Chỉnh Sửa')
+        self.buttonEdit.setFixedHeight(25)
+        self.buttonSaveImg  = QPushButton('Lưu Biểu Đồ')
+        self.buttonSaveImg.setFixedHeight(25)
+        self.buttonSaveFile = QPushButton('Lưu Database')
+        self.buttonSaveFile.setFixedHeight(25)
+        self.buttonClear    = QPushButton('Xóa')
+        self.buttonClear.setFixedHeight(25)
+
+        # Tạo combo box clear
+        self.comboBoxClear  = QComboBox(self)
+        self.comboBoxClear.addItems(self.lstClear)
+        self.comboBoxClear.setEditable(True)
+        self.comboBoxClear.setFixedHeight(25)
+        lineEditComboClear = self.comboBoxClear.lineEdit()
+        lineEditComboClear.setAlignment(Qt.AlignCenter)
+        lineEditComboClear.setReadOnly(True)
 
         # Set button Thêm = False, để user nhập đầy đủ thông tin mới cho nhấn vào
         self.buttonAdd.setEnabled(False)
@@ -58,12 +77,15 @@ class DataEntryForm(QWidget):
         # Họ Tên
         self.layoutRight.addWidget(QLabel('Họ và Tên'))
         self.layoutRight.addWidget(self.lineEditName)
-        self.lineEditName.setMaxLength(50)
+        self.lineEditName.setMaxLength(25)
         # Năm Sinh
         self.layoutRight.addWidget(QLabel('Năm Sinh'))
         self.layoutRight.addWidget(self.lineEditBirth)
         self.lineEditBirth.setDisplayFormat("dd/MM/yyyy")
         self.lineEditBirth.setCalendarPopup(True)
+        self.lineEditBirth.setMinimumDate(QDate(1900, 1, 1))
+        self.lineEditBirth.setMaximumDate(QDate(2100, 1, 1))
+        self.lineEditBirth.setDateTime(QtCore.QDateTime.currentDateTime())
         # Vị Trí
         self.layoutRight.addWidget(QLabel('Vị Trí'))
         self.layoutRight.addWidget(self.lineEditPosition)
@@ -71,7 +93,7 @@ class DataEntryForm(QWidget):
         # Câu Lạc Bộ
         self.layoutRight.addWidget(QLabel('Câu Lạc Bộ'))
         self.layoutRight.addWidget(self.lineEditClub)
-        self.lineEditClub.setMaxLength(50)
+        self.lineEditClub.setMaxLength(25)
         # Số áo
         self.layoutRight.addWidget(QLabel('Số Áo Thi Đấu'))
         self.layoutRight.addWidget(self.lineEditNumber)
@@ -79,29 +101,40 @@ class DataEntryForm(QWidget):
         self.lineEditNumber.setMaxLength(2)
 
         # Nút nhấn lựa chọn chức năng
-        self.layoutRight_AddClear = QHBoxLayout()
-        self.layoutRight_AddClear.addWidget(self.buttonAdd)
-        self.layoutRight_AddClear.addWidget(self.buttonClear)
+        self.layoutRight_AddEdit = QHBoxLayout()
+        self.layoutRight_AddEdit.addWidget(self.buttonAdd)
+        self.layoutRight_AddEdit.addWidget(self.buttonEdit)
+        self.layoutRight_Clear = QHBoxLayout()
+        self.layoutRight_Clear.addWidget(self.comboBoxClear)
+        self.layoutRight_Clear.addWidget(self.buttonClear)
         self.layoutRight_PlotQuit = QHBoxLayout()
         self.layoutRight_PlotQuit.addWidget(self.buttonPlot)
         self.layoutRight_PlotQuit.addWidget(self.buttonQuit)
+        self.layoutRight_Save = QHBoxLayout()
+        self.layoutRight_Save.addWidget(self.buttonSaveImg)
+        self.layoutRight_Save.addWidget(self.buttonSaveFile)
 
-        self.layoutRight.addLayout(self.layoutRight_AddClear)
+        # Set layout theo thứ tự từ trên xuống
+        self.layoutRight.addLayout(self.layoutRight_AddEdit)
+        self.layoutRight.addLayout(self.layoutRight_Clear)
+        self.layoutRight.addLayout(self.layoutRight_Save)
         self.layoutRight.addLayout(self.layoutRight_PlotQuit)
 
         self.layoutRight.addWidget(self.chartView)
 
-        self.layoutLeft.addWidget(self.table, 40)
-        self.layoutLeft.addLayout(self.layoutRight, 20)
-
+        self.layoutLeft.addWidget(self.table, 5)
+        self.layoutLeft.addLayout(self.layoutRight, 3)
         self.table.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
 
         self.setLayout(self.layoutLeft)
 
         self.buttonQuit.clicked.connect(self.quit_message)
-        self.buttonClear.clicked.connect(self.reset_table)
         self.buttonPlot.clicked.connect(self.graph_chart)
         self.buttonAdd.clicked.connect(self.add_entry)
+        self.buttonEdit.clicked.connect(self.edit_database)
+        self.buttonSaveImg.clicked.connect(self.export_db_file)
+        self.buttonSaveFile.clicked.connect(self.export_img)
+        self.buttonClear.clicked.connect(self.comboBox_Clear)
 
         self.lineEditName.textChanged[str].connect(self.check_disable)
         self.lineEditPosition.textChanged[str].connect(self.check_disable)
@@ -110,7 +143,7 @@ class DataEntryForm(QWidget):
 
         self.fill_table()
 
-    def export_image(self):
+    def export_img(self):
         time_file = self.datetime()
         f_name = "export_image" + time_file
         ext = ".png"
@@ -126,7 +159,11 @@ class DataEntryForm(QWidget):
         return time_file
 
     def edit_database(self):
-        pass
+        if self.flag == 0:
+            self.table.setEditTriggers(QtWidgets.QAbstractItemView.AllEditTriggers )
+            self.flag = 1
+        else:
+            self.table.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
 
     def check_disable(self):
         if self.lineEditName.text() and \
@@ -201,18 +238,48 @@ class DataEntryForm(QWidget):
         except ValueError:
             print("Something goes wrong")
 
-    def reset_table(self):
+    def clear_all_db(self):
         self.table.setRowCount(0)
         self.items = 0
 
         chart = QChart()
         self.chartView.setChart(chart)
 
-    def quit_message(self):
-        qmessage = QMessageBox.question(self, "Warning !!!", "Bạn có thực sự muốn thoát ?",
-                                        QMessageBox.Yes | QMessageBox.No)
-        if qmessage == QMessageBox.Yes:
-            sys.exit()
+    def clear_select_row(self):
+        index_list = []
+        if len(self.table.selectionModel().selectedRows()) > 0:
+            for model_index in self.table.selectionModel().selectedRows():
+                index = QtCore.QPersistentModelIndex(model_index)
+                index_list.append(index)
+
+            for index in index_list:
+                self.table.removeRow(index.row())
+                self.items -= 1
+
+            if self.items <= 0:
+                self.items = 0
+        else:
+            self.clear_all_db()
+
+    def comboBox_Clear(self):
+        if self.comboBoxClear.currentIndex() == 0:
+            self.clear_all_db()
+        else:
+            self.clear_select_row()
+
+    def quit_message(self, event):
+        reply = QMessageBox.question(
+            self, "Cảnh Báo",
+            "Bạn có thực sự muốn thoát? Vui lòng lưu trước khi thoát.",
+            QMessageBox.Save | QMessageBox.Close | QMessageBox.Cancel,
+            QMessageBox.Save)
+
+        if reply == QMessageBox.Close:
+            app.quit()
+        elif QMessageBox.Save:
+            self.export_db_file()
+        else:
+            pass
 
     def graph_chart(self):
         series = QPieSeries()
@@ -244,28 +311,59 @@ class DataEntryForm(QWidget):
 
         self.copyright.setText(_translate("self", "Copyright © 2021 by Hoa Nguyen | All Rights Reserved."))
 
+    def export_db_file(self):
+        import pandas as pd
+        my_dict = {self.table.horizontalHeaderItem(0).text(): [],
+                   self.table.horizontalHeaderItem(1).text(): [],
+                   self.table.horizontalHeaderItem(2).text(): [],
+                   self.table.horizontalHeaderItem(3).text(): [],
+                   self.table.horizontalHeaderItem(4).text(): []}
+        for columnNumber in range(self.table.columnCount() - 1):
+            for rowNumber in range(self.table.rowCount()):
+                my_dict[self.table.horizontalHeaderItem(columnNumber).text()].append(
+                    self.table.item(rowNumber, columnNumber).text())
+        df = pd.DataFrame(my_dict, columns=[self.table.horizontalHeaderItem(0).text(),
+                                            self.table.horizontalHeaderItem(1).text(),
+                                            self.table.horizontalHeaderItem(2).text(),
+                                            self.table.horizontalHeaderItem(3).text(),
+                                            self.table.horizontalHeaderItem(4).text()])
+
+        time_file = self.datetime()
+        f_name = "export_database" + time_file
+        ext = ".csv"
+        path_file = f_name + ext
+
+        df.to_csv(path_file, encoding='utf-8', index=False, header=True)
+
+
 class MainWindow(QMainWindow):
     def __init__(self, w):
         super().__init__()
 
         self.setWindowTitle('Football Manager Application')
-        self.resize(1200, 680)
+        self.resize(1000, 720)
 
         # Menu Bar
         self.menuBar = self.menuBar()
         self.fileMenu = self.menuBar.addMenu('File')
 
         # export to csv file action
-        exportAction = QAction('Export to CSV', self)
-        exportAction.setShortcut('Ctrl+E')
-        exportAction.triggered.connect(self.export_to_csv)
+        exportDbAction = QAction('Export to CSV', self)
+        exportDbAction.setShortcut('Ctrl+E')
+        exportDbAction.triggered.connect(self.export_db_file)
+
+        # export to csv file action
+        exportImgAction = QAction('Export Image', self)
+        exportImgAction.setShortcut('Ctrl+I')
+        exportImgAction.triggered.connect(self.export_img)
 
         # exit action
         exitAction = QAction('Exit', self)
         exitAction.setShortcut('Ctrl+Q')
         exitAction.triggered.connect(self.quit_message)
 
-        self.fileMenu.addAction(exportAction)
+        self.fileMenu.addAction(exportImgAction)
+        self.fileMenu.addAction(exportDbAction)
         self.fileMenu.addAction(exitAction)
 
         self.menubar = QtWidgets.QMenuBar(self)
@@ -292,9 +390,12 @@ class MainWindow(QMainWindow):
         self.actionSua.setObjectName("actionSua")
         self.actionSua.setEnabled(False)
 
-        self.actionExport = QtWidgets.QAction(self)
-        self.actionExport.setObjectName("actionExport")
-        self.actionExport.setEnabled(False)
+        self.actionExportImg = QtWidgets.QAction(self)
+        self.actionExportImg.setObjectName("actionExportImg")
+
+        self.actionExportDb = QtWidgets.QAction(self)
+        self.actionExportDb.setObjectName("actionExportDb")
+
         # Action thoát
         self.actionThoat = QtWidgets.QAction(self)
         self.actionThoat.setObjectName("actionThoat")
@@ -316,7 +417,8 @@ class MainWindow(QMainWindow):
         self.menuFile.addAction(self.actionThem)
         self.menuFile.addAction(self.actionSua)
         self.menuFile.addAction(self.actionXoa)
-        self.menuFile.addAction(self.actionExport)
+        self.menuFile.addAction(self.actionExportImg)
+        self.menuFile.addAction(self.actionExportDb)
         self.menuFile.addSeparator()
         self.menuFile.addAction(self.actionThoat)
         # menu hỏi đáp
@@ -337,7 +439,7 @@ class MainWindow(QMainWindow):
 
         # tạo connection tới những chỗ ta click vào
         self.actionThem.triggered.connect(self.add_entry)
-        self.actionXoa.triggered.connect(self.reset_table)
+        self.actionXoa.triggered.connect(self.clear_all_db)
         self.actionSua.triggered.connect(lambda: self.clicked("Sửa was clicked"))
         self.actionCauHoi.triggered.connect(self.question_answer)
         self.actionLienHe.triggered.connect(self.contact)
@@ -397,15 +499,17 @@ class MainWindow(QMainWindow):
         self.actionSua.setText(_translate("MainWindow", "Sửa"))
         self.actionSua.setShortcut(_translate("MainWindow", "Ctrl+E"))
 
-        self.actionExport.setText(_translate("MainWindow", "Xuất file"))
-        self.actionExport.setShortcut(_translate("MainWindow", "Ctrl+S"))
+        self.actionExportDb.setText(_translate("MainWindow", "Xuất File"))
 
-    def export_to_csv(self):
+        self.actionExportImg.setText(_translate("MainWindow", "Xuất Biểu Đồ"))
+
+    def export_db_file(self):
         import pandas as pd
         my_dict = {w.table.horizontalHeaderItem(0).text(): [],
                    w.table.horizontalHeaderItem(1).text(): [],
                    w.table.horizontalHeaderItem(2).text(): [],
-                   w.table.horizontalHeaderItem(3).text(): []}
+                   w.table.horizontalHeaderItem(3).text(): [],
+                   w.table.horizontalHeaderItem(4).text(): []}
         for columnNumber in range(w.table.columnCount() - 1):
             for rowNumber in range(w.table.rowCount()):
                 my_dict[w.table.horizontalHeaderItem(columnNumber).text()].append(
@@ -413,7 +517,8 @@ class MainWindow(QMainWindow):
         df = pd.DataFrame(my_dict, columns=[w.table.horizontalHeaderItem(0).text(),
                                             w.table.horizontalHeaderItem(1).text(),
                                             w.table.horizontalHeaderItem(2).text(),
-                                            w.table.horizontalHeaderItem(3).text()])
+                                            w.table.horizontalHeaderItem(3).text(),
+                                            w.table.horizontalHeaderItem(4).text()])
 
         time_file = self.datetime()
         f_name = "export_database" + time_file
@@ -422,11 +527,39 @@ class MainWindow(QMainWindow):
 
         df.to_csv(path_file, encoding='utf-8', index=False, header=True)
 
-    def quit_message(self):
-        qmessage = QMessageBox.question(self, "Warning !!!", "Bạn có thực sự muốn thoát ?",
-                                        QMessageBox.Yes | QMessageBox.No)
-        if qmessage == QMessageBox.Yes:
-            sys.exit()
+    def export_img(self):
+        time_file = self.datetime()
+        f_name = "export_image" + time_file
+        ext = ".png"
+        path_file = f_name + ext
+        plt.savefig(path_file)
+
+    def fill_table(self, data=None):
+        data = self._data if not data else data
+        len(self._data)
+        for name, birth, position, club, number in data.items():
+            nameItem = QTableWidgetItem(name)
+            nameItem.setTextAlignment(Qt.AlignLeft)
+
+            birthItem = QTableWidgetItem(birth)
+            birthItem.setTextAlignment(Qt.AlignCenter)
+
+            positionItem = QTableWidgetItem(position)
+            positionItem.setTextAlignment(Qt.AlignCenter)
+
+            clubItem = QTableWidgetItem(club)
+            clubItem.setTextAlignment(Qt.AlignCenter)
+
+            numberItem = QTableWidgetItem(number)
+            numberItem.setTextAlignment(Qt.AlignCenter)
+
+            self.table.insertRow(self.items)
+            self.table.setItem(self.items, 0, nameItem)
+            self.table.setItem(self.items, 1, birthItem)
+            self.table.setItem(self.items, 2, positionItem)
+            self.table.setItem(self.items, 3, clubItem)
+            self.table.setItem(self.items, 4, numberItem)
+            self.items += 1
 
     def add_entry(self):
         name = self.lineEditName.text()
@@ -465,7 +598,7 @@ class MainWindow(QMainWindow):
         except ValueError:
             print("Something goes wrong")
 
-    def reset_table(self):
+    def clear_all_db(self):
         self.table.setRowCount(0)
         self.items = 0
 
@@ -474,15 +607,13 @@ class MainWindow(QMainWindow):
 
     def quit_message(self, event):
         reply = QMessageBox.question(
-            self, "Message",
-            "Are you sure you want to quit? Any unsaved work will be lost.",
+            self, "Cảnh Báo",
+            "Bạn có thực sự muốn thoát? Vui lòng lưu trước khi thoát.",
             QMessageBox.Save | QMessageBox.Close | QMessageBox.Cancel,
             QMessageBox.Save)
 
         if reply == QMessageBox.Close:
             app.quit()
-        else:
-            pass
 
     def draw_chart(self):
         series = QPieSeries()
