@@ -326,7 +326,9 @@ class MainDisplay(QWidget):
 
         if self.comboBoxQA.currentIndex() == 0:
             # In kết quả ra màn hình và show ra thành 1 windows mới
-            self.secondWindows = OtherDisplay.newWindowsAppear(self.df)
+            # self.secondWindows = OtherDisplay.newWindowsAppear(self.df)
+            self.secondWindows = MainWindow.newWindowsAppearr(self.df)
+            self.secondWindows.show()
             return
         elif self.comboBoxQA.currentIndex() == 1:
             pass
@@ -502,10 +504,10 @@ class OtherDisplay(QWidget):
         view = QTableView()
         view.setModel(model)
         view.resize(520, 500)
-        view.show()
+        view.exec_()
 
 
-class MainWindow(QMainWindow):
+class MainWindow(QMainWindow, QWidget):
     def __init__(self, w):
         super().__init__()
 
@@ -819,6 +821,12 @@ class MainWindow(QMainWindow):
         chart.legend().setAlignment(Qt.AlignTop)
         self.chartView.setChart(chart)
 
+    def newWindowsAppearr(data):
+        model = otherWindowDisplay(data)
+        view = QTableView()
+        view.setModel(model)
+        view.resize(520, 500)
+        return view
 
 if __name__ == "__main__":
     import sys
