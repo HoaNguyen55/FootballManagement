@@ -26,13 +26,13 @@ class MainDisplay(QWidget):
         self.items = 0
         self.flag = 0
         self._data = {}
-        self._old_data = {}
         self._path_file = None
+        self.df = None
+        self.secondWindows = None
+        self.lstDoiTuyen = ['Việt Nam', 'UAE', 'Thái Lan', 'Malaysia', 'Indonesia']
         self.titleTable = 'Kết Quả'
         self.lstClear = ['Xóa tất cả', 'Lựa chọn dòng']
         self.lstQA    = ['Danh sách cầu thủ', 'Tuổi', 'Vị trí', 'Đội tuyển', 'Số áo cầu thủ']
-        self.df       = None
-        self.secondWindows = None
 
         self.table = QTableWidget()
         self.labelImage = QLabel()
@@ -44,7 +44,7 @@ class MainDisplay(QWidget):
         self.lineEditName = QLineEdit()
         self.lineEditBirth = QDateEdit()
         self.lineEditPos = QLineEdit()
-        self.lineEditClub = QLineEdit()
+        self.lineEditClub = QComboBox()
         self.lineEditNumber = QLineEdit()
 
         self.comboBoxClear = QComboBox()
@@ -151,9 +151,10 @@ class MainDisplay(QWidget):
         layoutVerRight.addWidget(self.lineEditPos)
         self.lineEditPos.setMaxLength(20)
         # Câu Lạc Bộ
-        layoutVerRight.addWidget(QLabel('Câu Lạc Bộ'))
+        layoutVerRight.addWidget(QLabel('Đội Tuyển'))
+        self.lineEditClub.addItems(self.lstDoiTuyen)
         layoutVerRight.addWidget(self.lineEditClub)
-        self.lineEditClub.setMaxLength(50)
+        # self.lineEditClub.setMaxLength(50)
         # Số áo
         layoutVerRight.addWidget(QLabel('Số Áo Thi Đấu'))
         layoutVerRight.addWidget(self.lineEditNumber)
@@ -202,7 +203,6 @@ class MainDisplay(QWidget):
 
         self.lineEditName.textChanged[str].connect(self.check_disable)
         self.lineEditPos.textChanged[str].connect(self.check_disable)
-        self.lineEditClub.textChanged[str].connect(self.check_disable)
         self.lineEditNumber.textChanged.connect(self.check_disable)
 
     def datetime(self):
@@ -223,7 +223,6 @@ class MainDisplay(QWidget):
     def check_disable(self):
         if self.lineEditName.text() and \
                 self.lineEditPos.text() and \
-                self.lineEditClub.text() and \
                 self.lineEditNumber.text():
             self.buttonAdd.setEnabled(True)
         else:
@@ -231,7 +230,6 @@ class MainDisplay(QWidget):
 
     def fill_table(self, data=None):
         data = self._data if not data else data
-        self._old_data = cp.deepcopy(data)
         for name, birth, position, club, number in data.items():
             nameItem = QTableWidgetItem(name)
             nameItem.setTextAlignment(Qt.AlignLeft)
@@ -260,7 +258,7 @@ class MainDisplay(QWidget):
         name = self.lineEditName.text()
         birth = self.lineEditBirth.text()
         position = self.lineEditPos.text()
-        club = self.lineEditClub.text()
+        club = self.lineEditClub.currentText()
         number = self.lineEditNumber.text()
 
         try:
@@ -287,7 +285,6 @@ class MainDisplay(QWidget):
 
             self.lineEditName.setText('')
             self.lineEditPos.setText('')
-            self.lineEditClub.setText('')
             self.lineEditNumber.setText('')
 
         except ValueError:
@@ -370,10 +367,6 @@ class MainDisplay(QWidget):
         number, result = QInputDialog.getInt(self, "Input Dialog", "Nhập số tuổi: ")
         self.showMsgInput(result)
         return number
-
-    def ok(self):
-        tuoi = self.tuoiBox.text()
-        self.tuoi = tuoi
 
     def quit_message(self, event):
         reply = QMessageBox.question(
