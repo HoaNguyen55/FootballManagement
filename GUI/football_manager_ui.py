@@ -68,8 +68,6 @@ class MainDisplay(QWidget):
         self.layoutHor.addLayout(self.layoutHRight, stretch=3)
         self.setLayout(self.layoutHor)
 
-        self.fill_table()
-
     def layoutHorizonLeft(self):
         # Define Widget as you want
         self.table.setColumnCount(5)
@@ -228,32 +226,6 @@ class MainDisplay(QWidget):
         else:
             self.buttonAdd.setEnabled(False)
 
-    def fill_table(self, data=None):
-        data = self._data if not data else data
-        for name, birth, position, club, number in data.items():
-            nameItem = QTableWidgetItem(name)
-            nameItem.setTextAlignment(Qt.AlignLeft)
-
-            birthItem = QTableWidgetItem(birth)
-            birthItem.setTextAlignment(Qt.AlignCenter)
-
-            positionItem = QTableWidgetItem(position)
-            positionItem.setTextAlignment(Qt.AlignLeft)
-
-            clubItem = QTableWidgetItem(club)
-            clubItem.setTextAlignment(Qt.AlignLeft)
-
-            numberItem = QTableWidgetItem(number)
-            numberItem.setTextAlignment(Qt.AlignCenter)
-
-            self.table.insertRow(self.items)
-            self.table.setItem(self.items, 0, nameItem)
-            self.table.setItem(self.items, 1, birthItem)
-            self.table.setItem(self.items, 2, positionItem)
-            self.table.setItem(self.items, 3, clubItem)
-            self.table.setItem(self.items, 4, numberItem)
-            self.items += 1
-
     def add_entry(self):
         name = self.lineEditName.text()
         birth = self.lineEditBirth.text()
@@ -274,13 +246,18 @@ class MainDisplay(QWidget):
             number = QTableWidgetItem(number)
             number.setTextAlignment(Qt.AlignCenter)
 
+            lst = [name, birth, position, club, number]
             # Thêm vào database table
-            self.table.insertRow(self.items)
-            self.table.setItem(self.items, 0, name)
-            self.table.setItem(self.items, 1, birth)
-            self.table.setItem(self.items, 2, position)
-            self.table.setItem(self.items, 3, club)
-            self.table.setItem(self.items, 4, number)
+            rowNum = self.items
+            self.table.insertRow(rowNum)
+            for colNum in range(self.table.columnCount()):
+                self.table.setItem(rowNum, colNum, lst[colNum])
+            # self.table.insertRow(self.items)
+            # self.table.setItem(self.items, 0, name)
+            # self.table.setItem(self.items, 1, birth)
+            # self.table.setItem(self.items, 2, position)
+            # self.table.setItem(self.items, 3, club)
+            # self.table.setItem(self.items, 4, number)
             self.items += 1
 
             self.lineEditName.setText('')
@@ -484,14 +461,26 @@ class MainDisplay(QWidget):
         fname, _ext = QFileDialog.getOpenFileNames(self, 'Open File', self._path_file, 'All file (*.*)')
 
         if len(fname) == 0:
-            QMessageBox.question(
-                self, "Cảnh Báo", "Không có file để chơi rồi bạn ơi !!!",
-                QMessageBox.Close,
-                QMessageBox.Close)
+            QMessageBox.about(
+                self, "Cảnh Báo", "Không có file để chơi rồi bạn ơi !!!")
             return
-        self.df = pd.read_csv(fname[0], encoding='utf-8')
+
+        answer_msg = QMessageBox.question(
+            self, "Load", "Bạn có muốn ghi đè file không?",
+            QMessageBox.No | QMessageBox.Yes,
+            QMessageBox.No)
+
+        self.df = pd.read_csv(fname[0], encoding='utf-8', header=None, skiprows=[0])
+        if answer_msg == QMessageBox.Yes:
+            self.clear_all_db()
+            self.loadFile(self.df)
         QMessageBox.about(self, "Info", "Import file complete")
 
+    def loadFile(self, data):
+        for rowNum in range(len(data)):
+            self.table.insertRow(rowNum)
+            for colNum in range(self.table.columnCount()):
+                self.table.setItem(rowNum, colNum, QTableWidgetItem(str(data[colNum][rowNum])))
 
 class otherWindowDisplay(QAbstractTableModel):
     def __init__(self, datadf):
@@ -630,6 +619,7 @@ class MainWindow(QMainWindow, QWidget):
         import pandas as pd
         text = self.input_dialog()
         if text is None:
+
             return
 
         cauthu_df = pd.read_csv('ds_cauthu.csv')
@@ -733,32 +723,6 @@ class MainWindow(QMainWindow, QWidget):
         path_file = f_name + ext
         plt.savefig(path_file)
 
-    def fill_table(self, data=None):
-        data = self._data if not data else data
-        len(self._data)
-        for name, birth, position, club, number in data.items():
-            nameItem = QTableWidgetItem(name)
-            nameItem.setTextAlignment(Qt.AlignLeft)
-
-            birthItem = QTableWidgetItem(birth)
-            birthItem.setTextAlignment(Qt.AlignCenter)
-
-            positionItem = QTableWidgetItem(position)
-            positionItem.setTextAlignment(Qt.AlignCenter)
-
-            clubItem = QTableWidgetItem(club)
-            clubItem.setTextAlignment(Qt.AlignCenter)
-
-            numberItem = QTableWidgetItem(number)
-            numberItem.setTextAlignment(Qt.AlignCenter)
-
-            self.table.insertRow(self.items)
-            self.table.setItem(self.items, 0, nameItem)
-            self.table.setItem(self.items, 1, birthItem)
-            self.table.setItem(self.items, 2, positionItem)
-            self.table.setItem(self.items, 3, clubItem)
-            self.table.setItem(self.items, 4, numberItem)
-            self.items += 1
 
     def add_entry(self):
         name = self.lineEditName.text()
