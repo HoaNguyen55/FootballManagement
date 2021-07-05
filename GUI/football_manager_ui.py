@@ -19,7 +19,20 @@ import pandas as pd
 from datetime import date, datetime
 
 
-class MainDisplay(QWidget):
+class defaultLst:
+    def __init__(self):
+        super().__init__()
+        self.lstViTri = ['Thủ Môn', 'Hậu Vệ', 'Tiền Vệ', 'Tiền Đạo']
+        self.lstLabel = ['Họ và Tên', 'Ngày Sinh', 'Vị Trí', 'Câu Lạc Bộ', 'Số Áo']
+        self.lstDoiTuyen = ['Việt Nam', 'UAE', 'Thái Lan', 'Malaysia', 'Indonesia']
+        self.lstClear = ['Xóa tất cả', 'Lựa chọn dòng']
+        self.lstQA = ['In tất cả cầu thủ',
+                      'Có <tuổi> lớn hơn',
+                      'Có <vị trí> và <đội tuyển>',
+                      'Có <Số áo> và <Vị trí>']
+
+
+class MainDisplay(QWidget, defaultLst):
     def __init__(self):
         super().__init__()
         self.layoutVerLeft = QVBoxLayout()
@@ -29,10 +42,8 @@ class MainDisplay(QWidget):
         self._path_file = None
         self.df = None
         self.secondWindows = None
-        self.lstDoiTuyen = ['Việt Nam', 'UAE', 'Thái Lan', 'Malaysia', 'Indonesia']
-        self.titleTable = 'Kết Quả'
-        self.lstClear = ['Xóa tất cả', 'Lựa chọn dòng']
-        self.lstQA    = ['Danh sách cầu thủ', 'Tuổi', 'Vị trí', 'Đội tuyển', 'Số áo cầu thủ']
+        self.dialog = None
+        self.browsefname = None
 
         self.table = QTableWidget()
         self.labelImage = QLabel()
@@ -43,7 +54,7 @@ class MainDisplay(QWidget):
 
         self.lineEditName = QLineEdit()
         self.lineEditBirth = QDateEdit()
-        self.lineEditPos = QLineEdit()
+        self.lineEditPos = QComboBox()
         self.lineEditClub = QComboBox()
         self.lineEditNumber = QLineEdit()
 
@@ -71,7 +82,7 @@ class MainDisplay(QWidget):
     def layoutHorizonLeft(self):
         # Define Widget as you want
         self.table.setColumnCount(5)
-        self.table.setHorizontalHeaderLabels(('Họ và Tên', 'Ngày Sinh', 'Vị Trí', 'Câu Lạc Bộ', 'Số Áo'))
+        self.table.setHorizontalHeaderLabels(self.lstLabel)
         self.table.horizontalHeader().setSectionResizeMode(0, QHeaderView.Stretch)
         self.table.horizontalHeader().setDefaultAlignment(QtCore.Qt.AlignHCenter)
 
@@ -146,13 +157,13 @@ class MainDisplay(QWidget):
         self.lineEditBirth.setDateTime(QtCore.QDateTime.currentDateTime())
         # Vị Trí
         layoutVerRight.addWidget(QLabel('Vị Trí'))
+        self.lineEditPos.addItems(self.lstViTri)
         layoutVerRight.addWidget(self.lineEditPos)
-        self.lineEditPos.setMaxLength(20)
         # Câu Lạc Bộ
         layoutVerRight.addWidget(QLabel('Đội Tuyển'))
         self.lineEditClub.addItems(self.lstDoiTuyen)
         layoutVerRight.addWidget(self.lineEditClub)
-        # self.lineEditClub.setMaxLength(50)
+
         # Số áo
         layoutVerRight.addWidget(QLabel('Số Áo Thi Đấu'))
         layoutVerRight.addWidget(self.lineEditNumber)
@@ -200,7 +211,6 @@ class MainDisplay(QWidget):
         self.buttonOpenFile.clicked.connect(self.browseFile)
 
         self.lineEditName.textChanged[str].connect(self.check_disable)
-        self.lineEditPos.textChanged[str].connect(self.check_disable)
         self.lineEditNumber.textChanged.connect(self.check_disable)
 
     def datetime(self):
@@ -216,11 +226,11 @@ class MainDisplay(QWidget):
             self.table.setEditTriggers(QtWidgets.QAbstractItemView.AllEditTriggers)
             self.flag = 1
         else:
+            self.flag = 0
             self.table.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
 
     def check_disable(self):
         if self.lineEditName.text() and \
-                self.lineEditPos.text() and \
                 self.lineEditNumber.text():
             self.buttonAdd.setEnabled(True)
         else:
@@ -229,7 +239,7 @@ class MainDisplay(QWidget):
     def add_entry(self):
         name = self.lineEditName.text()
         birth = self.lineEditBirth.text()
-        position = self.lineEditPos.text()
+        position = self.lineEditPos.currentText()
         club = self.lineEditClub.currentText()
         number = self.lineEditNumber.text()
 
@@ -252,16 +262,10 @@ class MainDisplay(QWidget):
             self.table.insertRow(rowNum)
             for colNum in range(self.table.columnCount()):
                 self.table.setItem(rowNum, colNum, lst[colNum])
-            # self.table.insertRow(self.items)
-            # self.table.setItem(self.items, 0, name)
-            # self.table.setItem(self.items, 1, birth)
-            # self.table.setItem(self.items, 2, position)
-            # self.table.setItem(self.items, 3, club)
-            # self.table.setItem(self.items, 4, number)
+
             self.items += 1
 
             self.lineEditName.setText('')
-            self.lineEditPos.setText('')
             self.lineEditNumber.setText('')
 
         except ValueError:
@@ -299,7 +303,7 @@ class MainDisplay(QWidget):
     def comboBox_QA(self):
         obj = None
         result = []
-
+        resultTuoi = []
         if self.df is None:
             QMessageBox.about(self, 'Info', 'Import file trước nha bạn')
             return
@@ -312,7 +316,7 @@ class MainDisplay(QWidget):
             yearCurrent = today.strftime('%Y')
             tuoiBox     = self.dialogBirthBox()
             tuoiDf      = cp.deepcopy(self.df)
-            for dateIdx in self.df['Ngày Sinh']:
+            for dateIdx in tuoiDf['Ngày Sinh']:
                 date_transfer_df = datetime.strptime(dateIdx, '%d/%m/%Y')
                 year_df = date_transfer_df.strftime('%Y')
                 tuoiPlayer = int(yearCurrent) - int(year_df)
@@ -323,15 +327,19 @@ class MainDisplay(QWidget):
             tuoiDf['result'] = result
             tuoiDf      = tuoiDf[tuoiDf['result'] == True]
             obj         = tuoiDf.drop(columns='result')
-            self.secondWindows = MainWindow.displayWindows(obj)
-            self.secondWindows.show()
 
-        elif self.comboBoxQA.currentIndex() == 3:
-            pass
-        elif self.comboBoxQA.currentIndex() == 4:
-            pass
+        elif self.comboBoxQA.currentIndex() == 2:
+            posTeamDf = cp.deepcopy(self.df)
+            self.dialog = inputPosClub()
+            if self.dialog.exec_():
+                pos, club = self.dialog.getInputs()
+                posTeamDf = posTeamDf[posTeamDf['Vị Trí'] == pos]
+                posTeamDf = posTeamDf[posTeamDf['Câu Lạc Bộ'] == club]
+
+            obj = posTeamDf
+
         else:
-            pass
+            return
 
         if obj is None:
             return
@@ -375,23 +383,6 @@ class MainDisplay(QWidget):
 
         self.chartView.setChart(chart)
 
-    def retranslateUi(self):
-        _translate = QtCore.QCoreApplication.translate
-        self.setWindowTitle(_translate("self", "Football Manager Application"))
-        self.buttonThem.setText(_translate("self", "Thêm"))
-        self.buttonChinhSua.setText(_translate("self", "Sửa"))
-        self.buttonXoaDuLieu.setText(_translate("self", "Xóa Database"))
-        self.buttonVeBieuDo.setText(_translate("self", "Vẽ Biểu Đồ"))
-        self.buttonThoat.setText(_translate("self", "Thoát"))
-        self.buttonXuat.setText(_translate("self", "Xuất Dữ Liệu"))
-
-        self.FirstAndLastName.setText(_translate("self", "Họ và tên"))
-        self.BirthDayName.setText(_translate("self", "Ngày tháng năm sinh"))
-        self.PositionName.setText(_translate("self", "Vị trí"))
-        self.ClubName.setText(_translate("self", "Đội tuyển"))
-
-        self.copyright.setText(_translate("self", "Copyright © 2021 by Hoa Nguyen | All Rights Reserved."))
-
     def export_db_file(self):
         flag_db_save = False
         try:
@@ -411,10 +402,27 @@ class MainDisplay(QWidget):
                                                     self.table.horizontalHeaderItem(2).text(),
                                                     self.table.horizontalHeaderItem(3).text(),
                                                     self.table.horizontalHeaderItem(4).text()])
-                time_file = self.datetime()
-                f_name = "export_database" + time_file
-                ext = ".csv"
-                self._path_file = f_name + ext
+
+                currentPath = cp.deepcopy(self._path_file)
+                if self._path_file is None:
+                    if self.browsefname is not None:
+                        currentPath = self.browsefname[0]
+
+                if currentPath is None:
+                    time_file = self.datetime()
+                    f_name = "export_database" + time_file
+                    ext = ".csv"
+                    self._path_file = f_name + ext
+
+                else:
+                    answer_msg = QMessageBox.question(
+                         self, "Save", "Bạn có muốn ghi đè file hiện tại không?",
+                         QMessageBox.No | QMessageBox.Yes,
+                         QMessageBox.No)
+
+                    if answer_msg == QMessageBox.Yes:
+                        self._path_file = currentPath
+
                 df.to_csv(self._path_file, encoding='utf-8', index=False, header=True)
                 flag_db_save = True
 
@@ -458,29 +466,47 @@ class MainDisplay(QWidget):
         return errFlag
 
     def browseFile(self):
-        fname, _ext = QFileDialog.getOpenFileNames(self, 'Open File', self._path_file, 'All file (*.*)')
-
+        fname, _ = QFileDialog.getOpenFileNames(self, 'Open File', self._path_file, 'All file (*.*)')
         if len(fname) == 0:
-            QMessageBox.about(
-                self, "Cảnh Báo", "Không có file để chơi rồi bạn ơi !!!")
+            if self.browsefname is None:
+                QMessageBox.about(
+                    self, "Cảnh Báo", "Không có file gì để chơi rồi bạn ơi !!!")
             return
 
-        answer_msg = QMessageBox.question(
-            self, "Load", "Bạn có muốn ghi đè file không?",
-            QMessageBox.No | QMessageBox.Yes,
-            QMessageBox.No)
-
-        self.df = pd.read_csv(fname[0], encoding='utf-8', header=None, skiprows=[0])
-        if answer_msg == QMessageBox.Yes:
-            self.clear_all_db()
-            self.loadFile(self.df)
-        QMessageBox.about(self, "Info", "Import file complete")
+        elif len(fname) != 0:
+            if self.browsefname is not None and fname[0] == self.browsefname[0]:
+                QMessageBox.about(self, "Info", "Already import this file")
+            else:
+                self.browsefname = fname
+                self.df = pd.read_csv(self.browsefname[0], encoding='utf-8')
+                # if answer_msg == QMessageBox.Yes:
+                self.clear_all_db()
+                self.loadFile(self.df)
+                QMessageBox.about(self, "Info", "Import file complete")
 
     def loadFile(self, data):
         for rowNum in range(len(data)):
             self.table.insertRow(rowNum)
             for colNum in range(self.table.columnCount()):
-                self.table.setItem(rowNum, colNum, QTableWidgetItem(str(data[colNum][rowNum])))
+                self.table.setItem(rowNum, colNum, QTableWidgetItem(str(data[self.lstLabel[colNum]][rowNum])))
+
+    def retranslateUi(self):
+        _translate = QtCore.QCoreApplication.translate
+        self.setWindowTitle(_translate("self", "Football Manager Application"))
+        self.buttonThem.setText(_translate("self", "Thêm"))
+        self.buttonChinhSua.setText(_translate("self", "Sửa"))
+        self.buttonXoaDuLieu.setText(_translate("self", "Xóa Database"))
+        self.buttonVeBieuDo.setText(_translate("self", "Vẽ Biểu Đồ"))
+        self.buttonThoat.setText(_translate("self", "Thoát"))
+        self.buttonXuat.setText(_translate("self", "Xuất Dữ Liệu"))
+
+        self.FirstAndLastName.setText(_translate("self", "Họ và tên"))
+        self.BirthDayName.setText(_translate("self", "Ngày tháng năm sinh"))
+        self.PositionName.setText(_translate("self", "Vị trí"))
+        self.ClubName.setText(_translate("self", "Đội tuyển"))
+
+        self.copyright.setText(_translate("self", "Copyright © 2021 by Hoa Nguyen | All Rights Reserved."))
+
 
 class otherWindowDisplay(QAbstractTableModel):
     def __init__(self, datadf):
@@ -723,7 +749,6 @@ class MainWindow(QMainWindow, QWidget):
         path_file = f_name + ext
         plt.savefig(path_file)
 
-
     def add_entry(self):
         name = self.lineEditName.text()
         birth = self.lineEditBirth.text()
@@ -754,8 +779,6 @@ class MainWindow(QMainWindow, QWidget):
             self.items += 1
 
             self.lineEditName.setText('')
-            self.lineEditPos.setText('')
-            self.lineEditClub.setText('')
             self.lineEditNumber.setText('')
 
         except ValueError:
@@ -798,6 +821,26 @@ class MainWindow(QMainWindow, QWidget):
         view.resize(510, 500)
         return view
 
+
+class inputPosClub(QDialog, defaultLst):
+    def __init__(self, parent=None):
+        super().__init__()
+        self.pos = QComboBox()
+        self.pos.addItems(self.lstViTri)
+        self.club = QComboBox()
+        self.club.addItems(self.lstDoiTuyen)
+        buttonBox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel, self)
+
+        layout = QFormLayout(self)
+        layout.addRow("Vị Trí", self.pos)
+        layout.addRow("Đội Tuyển", self.club)
+        layout.addWidget(buttonBox)
+
+        buttonBox.accepted.connect(self.accept)
+        buttonBox.rejected.connect(self.reject)
+
+    def getInputs(self):
+        return self.pos.currentText(), self.club.currentText()
 
 if __name__ == "__main__":
     import sys
