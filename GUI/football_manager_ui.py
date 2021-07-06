@@ -44,13 +44,15 @@ class MainDisplay(QWidget, defaultLst):
         self.df = None
         self.secondWindows = None
         self.dialog = None
-        self.browsefname = None
+        self.browseFname = None
 
         self.table = QTableWidget()
         self.labelImage = QLabel()
         self.layoutHor = QHBoxLayout()
+        self.layoutVer = QVBoxLayout()
         self.layoutHLeft = QVBoxLayout()
         self.layoutHRight = QVBoxLayout()
+        self.layoutVerFoot = QVBoxLayout()
         self.chartView = QChartView()
 
         self.lineEditName = QLineEdit()
@@ -66,19 +68,23 @@ class MainDisplay(QWidget, defaultLst):
         self.buttonPlot = QPushButton('Vẽ biểu đồ')
         self.buttonEdit = QPushButton('Bật/Tắt Chỉnh Sửa')
         self.buttonSaveImg = QPushButton('Lưu Biểu Đồ')
-        self.buttonSaveFile = QPushButton('Lưu Database')
+        self.buttonSaveFile = QPushButton('Lưu Dữ Liệu')
         self.buttonClear = QPushButton('Xóa')
-        self.buttonQA = QPushButton('Q&A')
-        self.buttonOpenFile = QPushButton('Open File')
+        self.buttonQA = QPushButton('Trả Lời')
+        self.buttonOpenFile = QPushButton('Mở File')
 
         # Layout Horizontal Left
         self.layoutHorizonLeft()
         # Layout Horizontal Right
         self.layoutHorizonRight()
+        # Layout Footer
+        self.layoutVerticalFooter()
 
         self.layoutHor.addLayout(self.layoutHLeft, stretch=4)
         self.layoutHor.addLayout(self.layoutHRight, stretch=3)
-        self.setLayout(self.layoutHor)
+        self.layoutVer.addLayout(self.layoutHor)
+        self.layoutVer.addLayout(self.layoutVerFoot)
+        self.setLayout(self.layoutVer)
 
     def layoutHorizonLeft(self):
         # Define Widget as you want
@@ -95,7 +101,7 @@ class MainDisplay(QWidget, defaultLst):
         # Table add Widget
         layoutVerLeft.addWidget(self.table)
         self.table.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
-        # Add Layout
+
         self.layoutHLeft.addLayout(layoutVerLeft)
 
     def layoutHorizonRight(self):
@@ -212,6 +218,11 @@ class MainDisplay(QWidget, defaultLst):
 
         self.lineEditName.textChanged[str].connect(self.check_disable)
         self.lineEditNumber.textChanged.connect(self.check_disable)
+
+    def layoutVerticalFooter(self):
+        # Add Layout footer
+        labelFoot = QLabel('Copyright © 2021 by Hoa Nguyen | All Rights Reserved.')
+        self.layoutVerFoot.addWidget(labelFoot, alignment=Qt.AlignCenter)
 
     def datetime(self):
         import datetime as dt
@@ -376,7 +387,8 @@ class MainDisplay(QWidget, defaultLst):
         clubDialog = inputPosClub(option=1)
         if clubDialog.exec_():
             nameDoiTuyen = clubDialog.getInputs()
-
+        else:
+            return
         series = QPieSeries()
         chart = QChart()
         chart.setTitle('Số lượng vị trí cầu thủ của đội tuyển ' + nameDoiTuyen)
@@ -429,8 +441,8 @@ class MainDisplay(QWidget, defaultLst):
 
                 currentPath = cp.deepcopy(self._path_file)
                 if self._path_file is None:
-                    if self.browsefname is not None:
-                        currentPath = self.browsefname[0]
+                    if self.browseFname is not None:
+                        currentPath = self.browseFname[0]
 
                 if currentPath is None:
                     time_file = self.datetime()
@@ -496,17 +508,17 @@ class MainDisplay(QWidget, defaultLst):
     def browseFile(self):
         fname, _ = QFileDialog.getOpenFileNames(self, 'Open File', self._path_file, 'All file (*.*)')
         if len(fname) == 0:
-            if self.browsefname is None:
+            if self.browseFname is None:
                 QMessageBox.about(
                     self, "Cảnh Báo", "Không có file gì để chơi rồi bạn ơi !!!")
             return
 
         elif len(fname) != 0:
-            if self.browsefname is not None and fname[0] == self.browsefname[0]:
+            if self.browseFname is not None and fname[0] == self.browseFname[0]:
                 QMessageBox.about(self, "Info", "Already import this file")
             else:
-                self.browsefname = fname
-                self.df = pd.read_csv(self.browsefname[0], encoding='utf-8')
+                self.browseFname = fname
+                self.df = pd.read_csv(self.browseFname[0], encoding='utf-8')
                 # if answer_msg == QMessageBox.Yes:
                 self.clear_all_db()
                 self.loadFile(self.df)
@@ -517,23 +529,6 @@ class MainDisplay(QWidget, defaultLst):
             self.table.insertRow(rowNum)
             for colNum in range(self.table.columnCount()):
                 self.table.setItem(rowNum, colNum, QTableWidgetItem(str(data[self.lstLabel[colNum]][rowNum])))
-
-    def retranslateUi(self):
-        _translate = QtCore.QCoreApplication.translate
-        self.setWindowTitle(_translate("self", "Football Manager Application"))
-        self.buttonThem.setText(_translate("self", "Thêm"))
-        self.buttonChinhSua.setText(_translate("self", "Sửa"))
-        self.buttonXoaDuLieu.setText(_translate("self", "Xóa Database"))
-        self.buttonVeBieuDo.setText(_translate("self", "Vẽ Biểu Đồ"))
-        self.buttonThoat.setText(_translate("self", "Thoát"))
-        self.buttonXuat.setText(_translate("self", "Xuất Dữ Liệu"))
-
-        self.FirstAndLastName.setText(_translate("self", "Họ và tên"))
-        self.BirthDayName.setText(_translate("self", "Ngày tháng năm sinh"))
-        self.PositionName.setText(_translate("self", "Vị trí"))
-        self.ClubName.setText(_translate("self", "Đội tuyển"))
-
-        self.copyright.setText(_translate("self", "Copyright © 2021 by Hoa Nguyen | All Rights Reserved."))
 
 
 class otherWindowDisplay(QAbstractTableModel):
@@ -559,10 +554,10 @@ class otherWindowDisplay(QAbstractTableModel):
         return None
 
 
-class MainWindow(QMainWindow, MainDisplay):
-    def __init__(self):
+class MainWindow(QMainWindow):
+    def __init__(self, sub):
         super().__init__()
-        subDisplay = MainDisplay()
+        self.setWindowIcon(QIcon('IconTitle.png'))
         self.setWindowTitle('Football Manager Application')
         self.resize(1000, 820)
 
@@ -573,55 +568,40 @@ class MainWindow(QMainWindow, MainDisplay):
         # export to csv file action
         exportDbAction = QAction('Export to CSV', self)
         exportDbAction.setShortcut('Ctrl+E')
-        exportDbAction.triggered.connect(self.export_db_file)
+        exportDbAction.triggered.connect(sub.export_db_file)
 
         # export to csv file action
         exportImgAction = QAction('Export Image', self)
         exportImgAction.setShortcut('Ctrl+I')
-        exportImgAction.triggered.connect(self.export_img)
+        exportImgAction.triggered.connect(sub.export_img)
 
         # exit action
         exitAction = QAction('Exit', self)
         exitAction.setShortcut('Ctrl+Q')
-        exitAction.triggered.connect(self.quit_message)
+        exitAction.triggered.connect(sub.quit_message)
 
         self.fileMenu.addAction(exportImgAction)
         self.fileMenu.addAction(exportDbAction)
         self.fileMenu.addAction(exitAction)
 
         self.menubar = QtWidgets.QMenuBar(self)
-        self.menubar.setObjectName("menubar")
         self.menuFile = QtWidgets.QMenu(self.menubar)
-        self.menuFile.setObjectName("menuFile")
         self.menuHoiDap = QtWidgets.QMenu(self.menubar)
-        self.menuHoiDap.setObjectName("menuHoiDap")
         self.menuBieuDo = QtWidgets.QMenu(self.menubar)
-        self.menuBieuDo.setObjectName("menuBieuDo")
         self.menuTroGiup = QtWidgets.QMenu(self.menubar)
-        self.menuTroGiup.setObjectName("menuTroGiup")
         self.setMenuBar(self.menubar)
 
         # Action Mở thêm xóa sửa
         self.actionMo = QtWidgets.QAction(self)
-
         self.actionThem = QtWidgets.QAction(self)
         self.actionThem.setEnabled(False)
-
         self.actionXoa = QtWidgets.QAction(self)
-
         self.actionSua = QtWidgets.QAction(self)
-        self.actionSua.setEnabled(False)
-
         self.actionXuatHinh = QtWidgets.QAction(self)
-
         self.actionXuatDuLieu = QtWidgets.QAction(self)
-
         self.actionThoat = QtWidgets.QAction(self)
-
         self.actionCauHoi = QtWidgets.QAction(self)
-
         self.actionVeBieuDo = QtWidgets.QAction(self)
-
         self.actionLienHe = QtWidgets.QAction(self)
 
         self.menuFile.addAction(self.actionMo)
@@ -635,9 +615,7 @@ class MainWindow(QMainWindow, MainDisplay):
         self.menuFile.addAction(self.actionThoat)
 
         self.menuHoiDap.addAction(self.actionCauHoi)
-
         self.menuBieuDo.addAction(self.actionVeBieuDo)
-
         self.menuTroGiup.addAction(self.actionLienHe)
 
         self.menubar.addAction(self.menuFile.menuAction())
@@ -649,17 +627,28 @@ class MainWindow(QMainWindow, MainDisplay):
         QtCore.QMetaObject.connectSlotsByName(self)
 
         # tạo connection tới những chỗ ta click vào
-        self.actionMo.triggered.connect(self.browseFile)
-        self.actionThem.triggered.connect(self.add_entry)
-        self.actionXoa.triggered.connect(self.clear_all_db)
-        self.actionSua.triggered.connect(self.edit_database)
-        self.actionThoat.triggered.connect(self.quit_message)
-        self.actionCauHoi.triggered.connect(self.comboBox_QA)
+        self.actionMo.triggered.connect(sub.browseFile)
+        self.actionThem.triggered.connect(sub.add_entry)
+        self.actionXoa.triggered.connect(sub.clear_all_db)
+        self.actionSua.triggered.connect(sub.edit_database)
+        self.actionThoat.triggered.connect(sub.quit_message)
+        self.actionCauHoi.triggered.connect(sub.comboBox_QA)
         self.actionLienHe.triggered.connect(self.contact)
-        self.actionVeBieuDo.triggered.connect(self.graph_chart)
-        self.actionXuatHinh.triggered.connect(self.export_img)
-        self.actionXuatDuLieu.triggered.connect(self.export_db_file)
-        self.setCentralWidget(subDisplay)
+        self.actionVeBieuDo.triggered.connect(sub.graph_chart)
+        self.actionXuatHinh.triggered.connect(sub.export_img)
+        self.actionXuatDuLieu.triggered.connect(sub.export_db_file)
+
+        sub.lineEditName.textChanged[str].connect(self.check_disable)
+        sub.lineEditNumber.textChanged.connect(self.check_disable)
+
+        self.setCentralWidget(sub)
+
+    def check_disable(self):
+        if sub.lineEditName.text() and \
+                sub.lineEditNumber.text():
+            self.actionThem.setEnabled(True)
+        else:
+            self.actionThem.setEnabled(False)
 
     def displayWindows(self):
         model = otherWindowDisplay(self)
@@ -670,13 +659,13 @@ class MainWindow(QMainWindow, MainDisplay):
 
     def contact(self):
         QMessageBox.about(self, 'Contact', "Football Manager là phần mềm quản lý cầu thủ\n"
-                                            "Phần mềm đang trong giai đoạn thử nghiệm\n"
-                                            "---------------------------------------------"
-                                            "\nMọi chi tiết xin vui lòng liên hệ:"
-                                            "\nThành viên dự án Football Manager:"
-                                            "\n      Tên: Nguyễn Lê Minh Hòa"
-                                            "\n      SĐT: 0944 886 896"
-                                            )
+                                           "Phần mềm đang trong giai đoạn thử nghiệm\n"
+                                           "---------------------------------------------"
+                                           "\nMọi chi tiết xin vui lòng liên hệ:"
+                                           "\nThành viên dự án Football Manager:"
+                                           "\n      Tên: Nguyễn Lê Minh Hòa"
+                                           "\n      SĐT: 0944 886 896"
+                          )
 
     def retranslateUi(self):
         _translate = QtCore.QCoreApplication.translate
@@ -689,7 +678,7 @@ class MainWindow(QMainWindow, MainDisplay):
         self.actionMo.setText(_translate("self", "Mở"))
         self.actionMo.setShortcut('Ctrl+O')
 
-        self.actionThem.setText(_translate("MainWindow", "Thêm"))
+        self.actionThem.setText(_translate("self", "Thêm"))
 
         self.actionXoa.setText(_translate("self", "Xóa"))
 
@@ -745,7 +734,8 @@ if __name__ == "__main__":
     import sys
 
     app = QtWidgets.QApplication(sys.argv)
-    main = MainWindow()
+    sub = MainDisplay()
+    main = MainWindow(sub)
     main.show()
 
     sys.exit(app.exec_())
