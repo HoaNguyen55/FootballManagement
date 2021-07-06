@@ -10,9 +10,11 @@
 from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
-from PyQt5.QtCore import QDate, Qt, QAbstractTableModel
-from PyQt5.QtChart import QChart, QChartView, QPieSeries
+from PyQt5.QtCore import QDate, Qt, QAbstractTableModel, QPointF
+
+from PyQt5.QtChart import QChart, QChartView, QPieSeries, QPieSlice
 import matplotlib.pyplot as plt
+import numpy as np
 import copy as cp
 import pandas as pd
 
@@ -59,7 +61,7 @@ class MainDisplay(QWidget, defaultLst):
         self.lineEditNumber = QLineEdit()
 
         self.comboBoxClear = QComboBox()
-        self.comboBoxQA    = QComboBox()
+        self.comboBoxQA = QComboBox()
         self.buttonAdd = QPushButton('Thêm')
         self.buttonQuit = QPushButton('Thoát')
         self.buttonPlot = QPushButton('Vẽ biểu đồ')
@@ -312,10 +314,10 @@ class MainDisplay(QWidget, defaultLst):
             obj = self.df
 
         elif self.comboBoxQA.currentIndex() == 1:
-            today       = date.today()
+            today = date.today()
             yearCurrent = today.strftime('%Y')
-            tuoiBox     = self.dialogBirthBox()
-            tuoiDf      = cp.deepcopy(self.df)
+            tuoiBox = self.dialogBirthBox()
+            tuoiDf = cp.deepcopy(self.df)
             for dateIdx in tuoiDf['Ngày Sinh']:
                 date_transfer_df = datetime.strptime(dateIdx, '%d/%m/%Y')
                 year_df = date_transfer_df.strftime('%Y')
@@ -325,12 +327,12 @@ class MainDisplay(QWidget, defaultLst):
                 else:
                     result.append(False)
             tuoiDf['result'] = result
-            tuoiDf      = tuoiDf[tuoiDf['result'] == True]
-            obj         = tuoiDf.drop(columns='result')
+            tuoiDf = tuoiDf[tuoiDf['result'] == True]
+            obj = tuoiDf.drop(columns='result')
 
         elif self.comboBoxQA.currentIndex() == 2:
             posTeamDf = cp.deepcopy(self.df)
-            self.dialog = inputPosClub()
+            self.dialog = inputPosClub(option=2)
             if self.dialog.exec_():
                 pos, club = self.dialog.getInputs()
                 posTeamDf = posTeamDf[posTeamDf['Vị Trí'] == pos]
@@ -370,17 +372,38 @@ class MainDisplay(QWidget, defaultLst):
             pass
 
     def graph_chart(self):
+        if self.table.rowCount() == 0:
+            QMessageBox.warning(self, "Error", "Không có dữ liệu để vẽ biểu đồ")
+            return
+        clubDialog = inputPosClub(option=1)
+        if clubDialog.exec_():
+            nameDoiTuyen = clubDialog.getInputs()
+
         series = QPieSeries()
-
-        for i in range(self.table.rowCount()):
-            text = self.table.item(i, 0).text()
-            val = float(self.table.item(i, 1).text().replace('$', ''))
-            series.append(text, val)
-
         chart = QChart()
-        chart.addSeries(series)
+        chart.setTitle('Số lượng cầu thủ xếp theo vị trí')
+        chart.setAnimationOptions(QChart.SeriesAnimations)
         chart.legend().setAlignment(Qt.AlignTop)
+        chart.setBackgroundVisible(True)
 
+        for viTri in self.lstViTri:
+            count = 0
+            for i in range(self.table.rowCount()):
+                if self.table.item(i, 3).text() == nameDoiTuyen:
+                    if self.table.item(i, 2).text() == viTri:
+                        count += 1
+            # series.append(viTri, count)
+            _slice = QPieSlice(viTri, count)
+            series.append(_slice)
+
+        series.setLabelsVisible(True)
+        series.setLabelsPosition(QPieSlice.LabelOutside)
+        for eachSlice in series.slices():
+            eachSlice.setLabel("{:.2f}%".format(100 * eachSlice.percentage()))
+
+        chart.addSeries(series)
+        for i in range(len(self.lstViTri)):
+            chart.legend().markers(series)[i].setLabel(self.lstViTri[i])
         self.chartView.setChart(chart)
 
     def export_db_file(self):
@@ -416,9 +439,9 @@ class MainDisplay(QWidget, defaultLst):
 
                 else:
                     answer_msg = QMessageBox.question(
-                         self, "Save", "Bạn có muốn ghi đè file hiện tại không?",
-                         QMessageBox.No | QMessageBox.Yes,
-                         QMessageBox.No)
+                        self, "Save", "Bạn có muốn ghi đè file hiện tại không?",
+                        QMessageBox.No | QMessageBox.Yes,
+                        QMessageBox.No)
 
                     if answer_msg == QMessageBox.Yes:
                         self._path_file = currentPath
@@ -645,7 +668,6 @@ class MainWindow(QMainWindow, QWidget):
         import pandas as pd
         text = self.input_dialog()
         if text is None:
-
             return
 
         cauthu_df = pd.read_csv('ds_cauthu.csv')
@@ -823,24 +845,36 @@ class MainWindow(QMainWindow, QWidget):
 
 
 class inputPosClub(QDialog, defaultLst):
-    def __init__(self, parent=None):
+    def __init__(self, option=0, parent=None):
         super().__init__()
         self.pos = QComboBox()
         self.pos.addItems(self.lstViTri)
         self.club = QComboBox()
         self.club.addItems(self.lstDoiTuyen)
+        self.option = option
         buttonBox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel, self)
 
         layout = QFormLayout(self)
-        layout.addRow("Vị Trí", self.pos)
-        layout.addRow("Đội Tuyển", self.club)
+        if option == 0:
+            layout.addRow("Vị Trí", self.pos)
+        elif option == 1:
+            layout.addRow("Đội Tuyển", self.club)
+        else:
+            layout.addRow("Vị Trí", self.pos)
+            layout.addRow("Đội Tuyển", self.club)
         layout.addWidget(buttonBox)
 
         buttonBox.accepted.connect(self.accept)
         buttonBox.rejected.connect(self.reject)
 
     def getInputs(self):
-        return self.pos.currentText(), self.club.currentText()
+        if self.option == 0:
+            return self.pos.currentText()
+        elif self.option == 1:
+            return self.club.currentText()
+        else:
+            return self.pos.currentText(), self.club.currentText()
+
 
 if __name__ == "__main__":
     import sys
